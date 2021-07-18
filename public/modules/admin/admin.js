@@ -21,7 +21,7 @@ let categoriesList
 
 ready(async () => {
     initProductsTable()
-    categoriesList = await axios.get('api/subCategories')
+    // categoriesList = await axios.get('api/subCategories')
 })
 
 document.querySelector('#nuevaCargaBtn').addEventListener('click', () => {
@@ -47,29 +47,30 @@ async function initProductsTable() {
         searchHighlight: true,
         responsive: false,
         columns: [
-            { data: 'sku' },
-            { data: 'title' },
-            { data: 'category' },
-            { data: 'subCategory' },
-            { data: 'star' },
-            { data: 'modificar' },
-            { data: 'eliminar' }
+            { data: 'code' },
+            { data: 'name' },
+            { data: 'brand'},
+            { data: 'size' },
+            { data: 'color' },
+            { data: 'qty' },
+            { data: 'category'},
+            { data: 'price'}
         ],
 
-        rowCallback: function (row, data, index) {
-            //if(data.estadoPago == true) {
-            if (data.star == 'yes') {
-                $(row).find('td:eq(4)').html('<center> <button type="button" class="btn btn-secondary btn-sm featureProduct"><i class="fas fa-star"></i></button> </center> ')
-            } else {
-                $(row).find('td:eq(4)').html('<center> <button type="button" class="btn btn-secondary btn-sm featureProduct"><i class="far fa-star"></i></button> </center> ')
+        // rowCallback: function (row, data, index) {
+        //     //if(data.estadoPago == true) {
+        //     if (data.star == 'yes') {
+        //         $(row).find('td:eq(4)').html('<center> <button type="button" class="btn btn-secondary btn-sm featureProduct"><i class="fas fa-star"></i></button> </center> ')
+        //     } else {
+        //         $(row).find('td:eq(4)').html('<center> <button type="button" class="btn btn-secondary btn-sm featureProduct"><i class="far fa-star"></i></button> </center> ')
 
-            }
-            $(row).find('td:eq(5)').html('<center> <button type="button" class="btn btn-secondary btn-sm modProduct"><i class="fas fa-edit"></i></button> </center> ')
-            $(row).find('td:eq(6)').html('<center> <button type="button" class="btn btn-secondary btn-sm delProduct"><i class="fas fa-trash"></i></button> </center> ')
-            // } else  {
-            // 	$(row).find('td:eq(0)').html('<center> <i style="color: red" class="fas fa-times-circle"></i> </center> ')
-            // }
-        },
+        //     }
+        //     // $(row).find('td:eq(5)').html('<center> <button type="button" class="btn btn-secondary btn-sm modProduct"><i class="fas fa-edit"></i></button> </center> ')
+        //     // $(row).find('td:eq(6)').html('<center> <button type="button" class="btn btn-secondary btn-sm delProduct"><i class="fas fa-trash"></i></button> </center> ')
+        //     // } else  {
+        //     // 	$(row).find('td:eq(0)').html('<center> <i style="color: red" class="fas fa-times-circle"></i> </center> ')
+        //     // }
+        // },
 
     }))
 
@@ -157,197 +158,197 @@ async function initProductsTable() {
         }
     })
 
-    async function initMod(product) {
+    // async function initMod(product) {
 
-        const modalMod = {
-            title: document.querySelector('#modal_title'),
-            body: document.querySelector('#modal_body'),
-            footer: document.querySelector('#modal_footer'),
-        }
+    //     const modalMod = {
+    //         title: document.querySelector('#modal_title'),
+    //         body: document.querySelector('#modal_body'),
+    //         footer: document.querySelector('#modal_footer'),
+    //     }
 
 
-        modalMod.title.innerHTML = `
-            Modificar producto SKU: ${product.sku}
-        `
-        modalMod.body.innerHTML = `
-        <div class="row">
-            <div class="col-md-6" style="margin-top:10px;">
-            Título *
-                <input id="modTitulo" type="text" value="${product.title}" class="form-control border-input">
-            </div>
+    //     modalMod.title.innerHTML = `
+    //         Modificar producto SKU: ${product.sku}
+    //     `
+    //     modalMod.body.innerHTML = `
+    //     <div class="row">
+    //         <div class="col-md-6" style="margin-top:10px;">
+    //         Título *
+    //             <input id="modTitulo" type="text" value="${product.title}" class="form-control border-input">
+    //         </div>
 
-            <div class="col-md-6" style="margin-top:10px;">
-            Descripción *
-                <input id="modDesc" type="text" value="${product.description}" class="form-control border-input">
-            </div>
+    //         <div class="col-md-6" style="margin-top:10px;">
+    //         Descripción *
+    //             <input id="modDesc" type="text" value="${product.description}" class="form-control border-input">
+    //         </div>
 
-            <div class="col-md-6" style="margin-top:10px;">
-            Categoría *
-                <select id="selectCategory" class="custom-select">
-                    <option value="0">Seleccione una categoria </option>
-                </select>
-            </div>
-            <div class="col-md-6" style="margin-top:10px;">
-            Subcategoría *
-                <select id="selectSubcategory" class="custom-select">
-                    <option value="0">Seleccione una categoria </option>
-                </select>
-            </div>
+    //         <div class="col-md-6" style="margin-top:10px;">
+    //         Categoría *
+    //             <select id="selectCategory" class="custom-select">
+    //                 <option value="0">Seleccione una categoria </option>
+    //             </select>
+    //         </div>
+    //         <div class="col-md-6" style="margin-top:10px;">
+    //         Subcategoría *
+    //             <select id="selectSubcategory" class="custom-select">
+    //                 <option value="0">Seleccione una categoria </option>
+    //             </select>
+    //         </div>
 
-            <div class="col-md-6" style="margin-top:10px;">
-            Imagen(es)
-                <input id="modImg" type="text" class="form-control border-input">
-            </div>
+    //         <div class="col-md-6" style="margin-top:10px;">
+    //         Imagen(es)
+    //             <input id="modImg" type="text" class="form-control border-input">
+    //         </div>
 
-            <div class="col-md-6" style="margin-top:10px;">
-            Video(s)
-                <input id="modVid" type="text" class="form-control border-input">
-            </div>
+    //         <div class="col-md-6" style="margin-top:10px;">
+    //         Video(s)
+    //             <input id="modVid" type="text" class="form-control border-input">
+    //         </div>
 
-            <div class="col-md-6" style="margin-top:10px;">
-            PDF(s)
-                <input id="modPdf" type="text" class="form-control border-input">
-            </div>
-            <div class="col-md-12" style="margin-top:10px;"><br><br></div>
+    //         <div class="col-md-6" style="margin-top:10px;">
+    //         PDF(s)
+    //             <input id="modPdf" type="text" class="form-control border-input">
+    //         </div>
+    //         <div class="col-md-12" style="margin-top:10px;"><br><br></div>
             
-            <div class="alert alert-dismissible alert-warning">
-                <h4 class="alert-heading">Para guardar un video/imagen/pdf es necesario lo siguiente:</h4>
-                <p class="mb-0">
-                <br>Los accesos a las imagenes deben ser links directos
-                <br>Solo se admitiran videos subidos a Youtube <i class="fab fa-youtube"></i>
-                <br>Los accesos a pdf deben ser links directos
-                <br>En caso de tener mas de un link deberan separarse mediante comas (, )
-                </p>
-            </div>
+    //         <div class="alert alert-dismissible alert-warning">
+    //             <h4 class="alert-heading">Para guardar un video/imagen/pdf es necesario lo siguiente:</h4>
+    //             <p class="mb-0">
+    //             <br>Los accesos a las imagenes deben ser links directos
+    //             <br>Solo se admitiran videos subidos a Youtube <i class="fab fa-youtube"></i>
+    //             <br>Los accesos a pdf deben ser links directos
+    //             <br>En caso de tener mas de un link deberan separarse mediante comas (, )
+    //             </p>
+    //         </div>
 
-            <br>
-            <div class="col-md-12" id="modProdErrorMessage"></div>
+    //         <br>
+    //         <div class="col-md-12" id="modProdErrorMessage"></div>
 
-        </div>
-            `
-        modalMod.footer.innerHTML = `
-        <button class="btn btn-dark" data-dismiss="modal">
-        <i style="color:#e74c3c;" class="fas fa-times"></i> Cancelar
-        </button>
+    //     </div>
+    //         `
+    //     modalMod.footer.innerHTML = `
+    //     <button class="btn btn-dark" data-dismiss="modal">
+    //     <i style="color:#e74c3c;" class="fas fa-times"></i> Cancelar
+    //     </button>
     
-        <button class="btn btn-dark" id="saveProduct">
-        <i style="color:#3498db;" class="fas fa-check"></i> Guardar
-        </button>
-        `
+    //     <button class="btn btn-dark" id="saveProduct">
+    //     <i style="color:#3498db;" class="fas fa-check"></i> Guardar
+    //     </button>
+    //     `
 
-        //CATEGORIA
-        let parentArray = []
+    //     //CATEGORIA
+    //     let parentArray = []
 
-        categoriesList.data.forEach((el, i) => {
-            let a = {
-                id: el.parent,
-                text: el.parent
-            }
-            parentArray.push(a)
-        })
+    //     categoriesList.data.forEach((el, i) => {
+    //         let a = {
+    //             id: el.parent,
+    //             text: el.parent
+    //         }
+    //         parentArray.push(a)
+    //     })
 
-        $('#selectCategory').empty();
-        $('#selectCategory').select2({
-            width: '100%',
-            minimumResultsForSearch: -1,
-            data: parentArray
-        })
+    //     $('#selectCategory').empty();
+    //     $('#selectCategory').select2({
+    //         width: '100%',
+    //         minimumResultsForSearch: -1,
+    //         data: parentArray
+    //     })
 
-        // $('#selectCategory').on('select2:select', function (e) {
-        //     // console.log("tipo seleccionado", e.params.data.id);
-        // });
+    //     // $('#selectCategory').on('select2:select', function (e) {
+    //     //     // console.log("tipo seleccionado", e.params.data.id);
+    //     // });
 
 
-        //SUBCATEGORIA
-        $('#selectSubcategory').empty();
-        $('#selectSubcategory').select2({
-            width: '100%',
-            minimumResultsForSearch: -1,
-            data: [{ id: '-1', text: '- Seleccione una categoria primero -' }]
-        })
+    //     //SUBCATEGORIA
+    //     $('#selectSubcategory').empty();
+    //     $('#selectSubcategory').select2({
+    //         width: '100%',
+    //         minimumResultsForSearch: -1,
+    //         data: [{ id: '-1', text: '- Seleccione una categoria primero -' }]
+    //     })
 
-        $('#selectCategory').on('change', function (el) {
-            if (el.target.value !== "-1") {
+    //     $('#selectCategory').on('change', function (el) {
+    //         if (el.target.value !== "-1") {
 
-                let subArray = []
-                categoriesList.data.forEach((cat, i) => {
-                    cat.sub.forEach(sub => {
-                        if (cat.parent == el.target.value) {
-                            let a = {
-                                id: sub,
-                                text: sub
-                            }
-                            subArray.push(a)
-                        }
-                    });
+    //             let subArray = []
+    //             categoriesList.data.forEach((cat, i) => {
+    //                 cat.sub.forEach(sub => {
+    //                     if (cat.parent == el.target.value) {
+    //                         let a = {
+    //                             id: sub,
+    //                             text: sub
+    //                         }
+    //                         subArray.push(a)
+    //                     }
+    //                 });
                     
-                })
+    //             })
 
-                subArray.unshift({ id: '-1', text: '- Seleccione una subCategoria -' })
+    //             subArray.unshift({ id: '-1', text: '- Seleccione una subCategoria -' })
 
 
-                $('#selectSubcategory').empty();
-                $('#selectSubcategory').select2({
-                    width: '100%',
-                    minimumResultsForSearch: -1,
-                    data: subArray
-                })
+    //             $('#selectSubcategory').empty();
+    //             $('#selectSubcategory').select2({
+    //                 width: '100%',
+    //                 minimumResultsForSearch: -1,
+    //                 data: subArray
+    //             })
 
-                // $('#selectSubcategory').on('select2:select', function (e) {
-                //     // console.log("tipo seleccionado", el.target.value);
-                //     // console.log("envase seleccionado", e.params.data.id);
+    //             // $('#selectSubcategory').on('select2:select', function (e) {
+    //             //     // console.log("tipo seleccionado", el.target.value);
+    //             //     // console.log("envase seleccionado", e.params.data.id);
                     
-                // });
+    //             // });
 
 
-            } else {
-                $('#selectSubcategory').empty();
-                $('#selectSubcategory').select2({
-                    width: '100%',
-                    minimumResultsForSearch: -1,
-                    data: [{ id: '-1', text: '- Seleccione una categoria primero -' }]
-                })
+    //         } else {
+    //             $('#selectSubcategory').empty();
+    //             $('#selectSubcategory').select2({
+    //                 width: '100%',
+    //                 minimumResultsForSearch: -1,
+    //                 data: [{ id: '-1', text: '- Seleccione una categoria primero -' }]
+    //             })
 
-            }
+    //         }
 
-        })
-
-
-        if (product) {
-            if (product.category) {
-                $('#selectCategory').val(product.category).trigger('change');
-            }
-            if (product.subCategory) {
-                $('#selectSubcategory').val(product.subCategory).trigger('change');
-            }
-
-            product.info.forEach(el => {
-                if (el.name == 'Imagen') {
-                    if (el.data !== '') {
-                        $('#modImg').val(el.data)
-                    }
-                }
-                if (el.name == 'video') {
-                    if (el.data !== '') {
-                        $('#modVid').val(el.data)
-                    }
-                }
-                if (el.name == 'pdf') {
-                    if (el.data !== '') {
-                        $('#modPdf').val(el.data)
-                    }
-                }
-            });
-        }
+    //     })
 
 
-        $('#modal').modal('show')
+    //     if (product) {
+    //         if (product.category) {
+    //             $('#selectCategory').val(product.category).trigger('change');
+    //         }
+    //         if (product.subCategory) {
+    //             $('#selectSubcategory').val(product.subCategory).trigger('change');
+    //         }
 
-        $('#saveProduct').on('click', async function(){
-            saveProduct(product)
-        })
+    //         product.info.forEach(el => {
+    //             if (el.name == 'Imagen') {
+    //                 if (el.data !== '') {
+    //                     $('#modImg').val(el.data)
+    //                 }
+    //             }
+    //             if (el.name == 'video') {
+    //                 if (el.data !== '') {
+    //                     $('#modVid').val(el.data)
+    //                 }
+    //             }
+    //             if (el.name == 'pdf') {
+    //                 if (el.data !== '') {
+    //                     $('#modPdf').val(el.data)
+    //                 }
+    //             }
+    //         });
+    //     }
 
-    }
+
+    //     $('#modal').modal('show')
+
+    //     $('#saveProduct').on('click', async function(){
+    //         saveProduct(product)
+    //     })
+
+    // }
     // $('#productsTable tbody').on('click', 'tr', function () {
     // 	internals.tables.products.rowSelected = internals.tables.products.datatable.row($(this).closest('tr'))
 
@@ -405,24 +406,58 @@ const handleModal = () => {
     }
 
     modalSelector.title.innerHTML = `
-		Nueva carga de productos
+		Nueva venta de productos
 	`
     modalSelector.body.innerHTML = `
     <br>
     <br>
-    	<input type="file" id="excelFile" accept=".xlsx"/>
-        <br><br><br><br>
-        <div class="alert alert-dismissible alert-warning">
-            <h4 class="alert-heading">Los campos excel requeridos son:</h4>
-            <p class="mb-0">
-            <br>SKU
-            <br>ID producto (product_id)
-            <br>Titulo
-            <br>Categoría (padre)
-            <br>Descripción
-            <br>Info_status = COMPLETADO
-            </p>
+    <div class="row">
+    <div class="col-md-4" style="margin-top:10px;">
+        Codigo
+        <select id="categoryPro" class="custom-select">
+        <option value="001">001</option>
+        <option value="002">002</option>
+        <option value="003">003</option>
+        <option value="004">004</option>
+        <option value="005">005</option>
+        <option value="006">006</option>
+        </select>
         </div>
+    <div class="col-md-4" style="margin-top:10px;">
+    Nombre del producto
+        <input id="namePro" type="text" placeholder="Nombre del producto" class="form-control border-input " disabled>
+    </div>
+
+    <div class="col-md-4" style="margin-top:10px;">
+    Marca del producto
+        <input id="brandPro" type="text" placeholder="marca producto " class="form-control border-input " disabled>
+    </div>
+
+    <div class="col-md-4" style="margin-top:10px;">
+    Talla
+        <input id="sizePro" type="text" placeholder="Talla" class="form-control border-input " disabled>
+    </div>
+
+    <div class="col-md-4" style="margin-top:10px;">
+    Color
+        <input id="colorPro" type="text" placeholder="Color" class="form-control border-input " disabled>
+    </div>
+
+    <div class="col-md-4" style="margin-top:10px;">
+    Cantidad
+        <input id="qtyPro" type="text" placeholder="Ej:14" class="form-control border-input" disabled>
+    </div>
+
+    <div class="col-md-4" style="margin-top:10px;">
+    Categoria
+        <input id="categoryPro" type="text" placeholder="Categoria" class="form-control border-input" disabled>
+    </div>
+
+    <div class="col-md-4" style="margin-top:10px;">
+    Precio
+        <input id="pricePro" type="text" placeholder="Precio" class="form-control border-input" disabled>
+    </div>
+
     <br>
     `
     modalSelector.footer.innerHTML = `

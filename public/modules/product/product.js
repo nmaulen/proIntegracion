@@ -3,42 +3,39 @@ let datatableDisabledUsers
 let userRowSelected
 let userRowSelectedData
 
-$(document).ready(function(){
-    chargeUsersTable()
-})
+// $(document).ready(function(){
+//     chargeUsersTable()
+// })
 
 function chargeUsersTable() {
-    datatableShoes = $('#tableShoes')
-    .DataTable( {
-        dom: 'Bfrtip',
-        buttons: [
-            'excel'
-        ],
-        ordering: true,
-        iDisplayLength: 50,
+    loadingHandler('start')
+    await $.when(internals.tables.products.datatable = $('#productsTable').DataTable({
         language: {
             url: spanishDataTableLang
         },
+
+        // rowCallback: function( row, data ) {
+        //     $(row).find('td:eq(1)').html(capitalizeAll(data.name))
+        // },
+        order: [[1, 'desc']],
+        columnDefs: [
+            { "width": "100px", "targets": 0 },
+            { "width": "1150px", "targets": 1 }
+        ],
+        ordering: true,
+        searchHighlight: true,
         responsive: false,
         columns: [
             { data: 'code' },
             { data: 'name' },
-            { data: 'brand' },
+            { data: 'brand'},
             { data: 'size' },
             { data: 'color' },
-            { data: 'qty'},
+            { data: 'qty' },
             { data: 'category'},
-            { data: 'price'},
-            { data: 'date'}
-        ],
-        initComplete: function (settings, json) {
-            getUsersEnabled()
-        },
-        rowCallback: function( row, data ) {
-            // if (data.scope == "sadmin") $(row).find('td:eq(5)').html("Super Administrador")
-            // if (data.scope == "admin") $(row).find('td:eq(5)').html("Administrador")
-        }
-    })
+            { data: 'price'}
+        ]
+    }))
 
 
     $('#tableShoes tbody').on('click', 'tr', function () {
@@ -57,14 +54,14 @@ function chargeUsersTable() {
     })
 }
 
-function cleanData(data){
-    data.rut = ktoK(cleanRut(data.rut))
+// function cleanData(data){
+//     data.rut = ktoK(cleanRut(data.rut))
 
-    return data
-}
+//     return data
+// }
 
 async function getUsersEnabled() {
-    let res = await axios.get('api/product')
+    let res = await axios.get('api/products')
 
     // let cate = await axios.get('api/categories')
     // console.log("categorias", cate.data);
@@ -73,15 +70,15 @@ async function getUsersEnabled() {
             $('#loadingUsers').empty()
         } else if(res.data) {
 
-            let formatRes = res.data.map(el=>{
+            // let formatRes = res.data.map(el=>{
 
-                let rut = validateRut(el.rut)
-                if (rut.isValid ) {
-                    el.rut = rut.getNiceRut();
-                }
+            //     let rut = validateRut(el.rut)
+            //     if (rut.isValid ) {
+            //         el.rut = rut.getNiceRut();
+            //     }
 
-                return el
-            })
+            //     return el
+            // })
 
             datatableShoes.rows.add(formatRes).draw()
             $('#loadingUsers').empty()
@@ -110,7 +107,7 @@ async function deleteUser(_id, name, rol) {
     console.log("rol", rol);
     if (rol !== "sadmin") {
         let result = await Swal.fire({
-            title: `Eliminar usuario ${name}`,
+            title: `Eliminar producto ${name}`,
             type: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
@@ -130,7 +127,7 @@ async function deleteUser(_id, name, rol) {
             if (delUser.data.ok) {
                 $('#optionModShoes').prop('disabled', true)
                 $('#optionDeleteShoe').prop('disabled', true)
-                toastr.success(`Usuario "${name}" eliminado correctamente`);
+                toastr.success(`producto "${name}" eliminado correctamente`);
                 datatableShoes
                 .row( userRowSelected )
                 .remove()
@@ -141,7 +138,7 @@ async function deleteUser(_id, name, rol) {
             }
         }
     }
-    toastr.warning(`Usuario "${name}" no puede ser eliminado`);
+    toastr.warning(`producto "${name}" no puede ser eliminado`);
 
 }
 
@@ -150,7 +147,7 @@ async function deleteUser(_id, name, rol) {
 
 $('#optionModShoes').on('click', function() {
     $('#shoesModal').modal('show');
-    $('#modal_title').html(`Modificar usuario: ${capitalizeAll(userRowSelectedData.name)} ${capitalizeAll(userRowSelectedData.lastname)}`)
+    $('#modal_title').html(`Modificar producto: ${capitalizeAll(userRowSelectedData.name)} ${capitalizeAll(userRowSelectedData.lastname)}`)
     modNewUser(userRowSelectedData)
 
     let mod = 'yes'
@@ -159,9 +156,9 @@ $('#optionModShoes').on('click', function() {
     })
 })
 
-const rutFunc = (rut) => {
-    return $.formatRut(rut)
-}
+// const rutFunc = (rut) => {
+//     return $.formatRut(rut)
+// }
 
 function modNewUser(modUserData) {   //NEW AND MOD USER
     $.when($('#modal_body').html(`
@@ -173,7 +170,7 @@ function modNewUser(modUserData) {   //NEW AND MOD USER
 
         <div class="col-md-4" style="margin-top:10px;">
         Marca del producto
-            <input id="brandPro" type="text" placeholder=" usuario " class="form-control border-input">
+            <input id="brandPro" type="text" placeholder=" producto " class="form-control border-input">
         </div>
 
         <div class="col-md-4" style="margin-top:10px;">
@@ -185,6 +182,12 @@ function modNewUser(modUserData) {   //NEW AND MOD USER
         Color
             <input id="colorPro" type="text" placeholder="Color" class="form-control border-input">
         </div>
+
+        <div class="col-md-4" style="margin-top:10px;">
+        Cantidad
+            <input id="qtyPro" type="text" placeholder="Cantidad" class="form-control border-input">
+        </div>
+
         <div class="col-md-4" style="margin-top:10px;">
         Categoria
         <select id="categoryPro" class="custom-select">
@@ -198,8 +201,8 @@ function modNewUser(modUserData) {   //NEW AND MOD USER
         </div>
 
         <div class="col-md-4" style="margin-top:10px;">
-        Email
-            <input id="newUserEmail" type="text" placeholder="Email" class="form-control border-input">
+        Precio
+            <input id="pricePro" type="text" placeholder="Cantidad" class="form-control border-input">
         </div>
 
         <div class="col-md-12" id="newUserErrorMessage"></div>
@@ -208,17 +211,29 @@ function modNewUser(modUserData) {   //NEW AND MOD USER
 `)).then(function () {
 
     $('#namePro').on('keyup', function() {
-        let rut = validateRut(this.value)
-        if (rut.isValid ) {
-            $('#namePro').val(rut.getNiceRut())
-        }
+        $('#namePro').val((this.value))
+        // if (rut.isValid ) {
+        //     $('#namePro').val(rut.getNiceRut())
+        // }
     })
 
     $('#brandPro').on('keyup', function() {
-        $('#brandPro').val(removeSpecials(this.value))
+        $('#brandPro').val((this.value))
     })
-    $('#newUserLastname').on('keyup', function() {
-        $('#newUserLastname').val(removeSpecials(this.value))
+    $('#sizePro').on('keyup', function() {
+        $('#sizePro').val((this.value))
+    })
+    $('#colorPro').on('keyup', function() {
+        $('#colorPro').val((this.value))
+    })
+    $('#qtyPro').on('keyup', function() {
+        $('#qtyPro').val((this.value))
+    })
+    $('#categoryPro').on('keyup', function() {
+        $('#categoryPro').val((this.value))
+    })
+    $('#pricePro').on('keyup', function() {
+        $('#pricePro').val((this.value))
     })
 
     if (!modUserData) {
@@ -226,24 +241,24 @@ function modNewUser(modUserData) {   //NEW AND MOD USER
             $('#namePro').focus()
         }, 500)
     } else {
-        let ruto = validateRut(modUserData.rut)
-        let rutVal
-        if (ruto.isValid ) {
-            rutVal = ruto.getNiceRut()
-        } else {
-            rutVal = modUserData.rut
-        }
-        $('#namePro').val(rutVal);
+        // let ruto = validateRut(modUserData.rut)
+        // let rutVal
+        // if (ruto.isValid ) {
+        //     rutVal = ruto.getNiceRut()
+        // } else {
+        //     rutVal = modUserData.rut
+        // }
+        // $('#namePro').val(rutVal);
         $('#namePro').attr('readOnly', true);
         $('#brandPro').val(modUserData.name);
-        $('#newUserLastname').val(modUserData.lastname);
+        $('#sizePro').val(modUserData.lastname);
 
-        if (modUserData.scope == 'admin' || modUserData.scope == 'Administrador') {
-            // $('#newUserRole').val('admin').trigger("change");
-            $('#newUserRole').val('Administrador');
-        } else if (modUserData.scope == 'sadmin' || modUserData.scope == 'Super Administrador') {
-            $('#newUserRole').val('Super Administrador');
-        }
+        // if (modUserData.scope == 'admin' || modUserData.scope == 'Administrador') {
+        //     // $('#newUserRole').val('admin').trigger("change");
+        //     $('#newUserRole').val('Administrador');
+        // } else if (modUserData.scope == 'sadmin' || modUserData.scope == 'Super Administrador') {
+        //     $('#newUserRole').val('Super Administrador');
+        // }
 
         $('#newUserPhone').val(modUserData.phone);
         $('#newUserEmail').val(modUserData.email);
@@ -279,31 +294,30 @@ function showPass() {
 async function saveUser(mod) {
 
     let userData = {
-        rut: cleanRut($('#namePro').val()),
-        name: removeExtraSpaces($('#brandPro').val()),
-        lastname: $('#newUserLastname').val(),
-        password: $('#newUserPassword').val(),
-        scope: $('#newUserRole').val(),
-        phone: $('#newUserPhone').val(),
-        email: $('#newUserEmail').val(),
-        mod: 'no'
+        name: ($('#namePro').val()),
+        brand: $('#brandPro').val(),
+        size: $('#sizePro').val(),
+        color: $('#colorPro').val(),
+        qty: $('#qtyPro').val(),
+        category: $('#categoryPro').val(),
+        price: $('#pricePro').val()
     }
     if (mod) userData.mod = mod
 
     let validUser = await validateUserData(userData)
     if (validUser.ok) {
-        let saveUserRes = await axios.post('/api/users', userData)
+        let saveUserRes = await axios.post('/api/products', userData)
         if(!saveUserRes.data.error) {
             if (mod) {
-                toastr.success('El usuario se ha modificado correctamente')
+                toastr.success('El producto se ha modificado correctamente')
 
-                let rut = validateRut(saveUserRes.data.rut)
-                if (rut.isValid ) {
-                    saveUserRes.data.rut = rut.getNiceRut()
-                }
+                // let rut = validateRut(saveUserRes.data.rut)
+                // if (rut.isValid ) {
+                //     saveUserRes.data.rut = rut.getNiceRut()
+                // }
 
-                if (saveUserRes.data.scope == 'admin') saveUserRes.data.scope = "Administrador"
-                if (saveUserRes.data.scope == 'sadmin') saveUserRes.data.scope = "Super Administrador"
+                // if (saveUserRes.data.scope == 'admin') saveUserRes.data.scope = "Administrador"
+                // if (saveUserRes.data.scope == 'sadmin') saveUserRes.data.scope = "Super Administrador"
 
                 $('#optionModShoes').prop('disabled', true)
                 $('#optionDeleteShoe').prop('disabled', true)
@@ -328,15 +342,15 @@ async function saveUser(mod) {
                 $('#shoesModal').modal('hide')
 
             } else {
-                toastr.success('El usuario se ha creado correctamente')
+                toastr.success('El producto se ha creado correctamente')
 
-                let rut = validateRut(saveUserRes.data.rut)
-                if (rut.isValid ) {
-                    saveUserRes.data.rut = rut.getNiceRut()
-                }
+                // let rut = validateRut(saveUserRes.data.rut)
+                // if (rut.isValid ) {
+                //     saveUserRes.data.rut = rut.getNiceRut()
+                // }
 
-                if (saveUserRes.data.scope == 'admin') saveUserRes.data.scope = "Administrador"
-                if (saveUserRes.data.scope == 'sadmin') saveUserRes.data.scope = "Super Administrador"
+                // if (saveUserRes.data.scope == 'admin') saveUserRes.data.scope = "Administrador"
+                // if (saveUserRes.data.scope == 'sadmin') saveUserRes.data.scope = "Super Administrador"
 
                 $('#optionModShoes').prop('disabled', true)
                 $('#optionDeleteShoe').prop('disabled', true)
@@ -358,7 +372,7 @@ async function saveUser(mod) {
         }
 
     } else {
-        toastr.warning('Ha ocurrido un error al crear el usuario, por favor intentelo nuevamente')
+        toastr.warning('Ha ocurrido un error al crear el producto, por favor intentelo nuevamente')
     }
 
 }
@@ -371,71 +385,105 @@ async function validateUserData(userData) {
     // return new Promise(resolve=>{
         // 5 puntos
 
-        if(userData.rut.length >= 6 && isRut(userData.rut)) { // 1
+        if(userData.name.length > 1 ) { // 1
             validationCounter++
             $('#namePro').css('border', '1px solid #3498db')
         } else {
-            errorMessage += `<br>Debe ingresar el rut del usuario`
+            errorMessage += `<br>Debe ingresar el nombre del producto`
             $('#namePro').css('border', '1px solid #e74c3c')
         }
 
-        if(userData.name.length > 1) { // 2
+        if(userData.brand.length > 1) { // 2
             validationCounter++
             $('#brandPro').css('border', '1px solid #3498db')
         } else {
-            errorMessage += `<br>Debe ingresar el nombre del usuario</b>`
+            errorMessage += `<br>Debe ingresar marca del producto</b>`
             $('#brandPro').css('border', '1px solid #e74c3c')
         }
 
-        if(userData.lastname.length > 1) { // 3
+        if(userData.size.length > 1) { // 3
             validationCounter++
-            $('#newUserLastname').css('border', '1px solid #3498db')
+            $('#sizePro').css('border', '1px solid #3498db')
         } else {
-            errorMessage += `<br>Debe ingresar el apellido del usuario`
-            $('#newUserLastname').css('border', '1px solid #e74c3c')
+            errorMessage += `<br>Debe ingresar una talla de producto`
+            $('#sizePro').css('border', '1px solid #e74c3c')
         }
+
+        if(userData.color.length > 1) { // 3
+            validationCounter++
+            $('#colorPro').css('border', '1px solid #3498db')
+        } else {
+            errorMessage += `<br>Debe ingresar un color de producto`
+            $('#colorPro').css('border', '1px solid #e74c3c')
+        }
+
+        if(userData.qty.length > 1) { // 3
+            validationCounter++
+            $('#qtyPro').css('border', '1px solid #3498db')
+        } else {
+            errorMessage += `<br>Debe ingresar una talla de producto`
+            $('#qtyPro').css('border', '1px solid #e74c3c')
+        }
+
+        if(userData.category.length > 1) { // 3
+            validationCounter++
+            $('#categoryPro').css('border', '1px solid #3498db')
+        } else {
+            errorMessage += `<br>Debe ingresar una categoria de producto`
+            $('#categoryPro').css('border', '1px solid #e74c3c')
+        }
+
+        if(userData.price.length > 1) { // 3
+            validationCounter++
+            $('#pricePro').css('border', '1px solid #3498db')
+        } else {
+            errorMessage += `<br>Debe ingresar un precio de producto`
+            $('#pricePro').css('border', '1px solid #e74c3c')
+        }
+
+
 
 
         // if(userData.phone.length > 1) { // 5
         //     validationCounter++
         //     $('#newUserPhone').css('border', '1px solid #3498db')
         // } else {
-        //     errorMessage += `<br>Debe ingresar el teléfono del usuario`
+        //     errorMessage += `<br>Debe ingresar el teléfono del producto`
         //     $('#newUserPhone').css('border', '1px solid #e74c3c')
         // }
 
-        if(isEmail(userData.email)) { // 6
-            validationCounter++
-            $('#newUserEmail').css('border', '1px solid #3498db')
-        } else {
-            errorMessage += `<br>Debe ingresar el correo del usuario`
-            $('#newUserEmail').css('border', '1px solid #e74c3c')
-        }
+        // if(isEmail(userData.email)) { // 6
+        //     validationCounter++
+        //     $('#newUserEmail').css('border', '1px solid #3498db')
+        // } else {
+        //     errorMessage += `<br>Debe ingresar el correo del producto`
+        //     $('#newUserEmail').css('border', '1px solid #e74c3c')
+        // }
 
-        if (userData.mod == 'yes') {
+        // if (userData.mod == 'yes') {
 
-            if(userData.changePassword) {
-                if(userData.password.length > 1) { // 4
-                    validationCounter++
-                    $('#modUserPassword').css('border', '1px solid #3498db')
-                } else {
-                    errorMessage += `<br>Debe ingresar una contraseña`
-                    $('#modUserPassword').css('border', '1px solid #e74c3c')
-                }
-            } else {
-                validationCounter++
-            }
+        //     if(userData.changePassword) {
+        //         if(userData.password.length > 1) { // 4
+        //             validationCounter++
+        //             $('#modUserPassword').css('border', '1px solid #3498db')
+        //         } else {
+        //             errorMessage += `<br>Debe ingresar una contraseña`
+        //             $('#modUserPassword').css('border', '1px solid #e74c3c')
+        //         }
+        //     } else {
+        //         validationCounter++
+        //     }
 
-        } else {
-            if(userData.password.length > 5) { // 4
-                validationCounter++
-                $('#newUserPassword').css('border', '1px solid #3498db')
-            } else {
-                errorMessage += `<br>Debe ingresar una contraseña valida de mas de 5 caracteres`
-                $('#newUserPassword').css('border', '1px solid #e74c3c')
-            }
+        // } else {
+        //     if(userData.password.length > 5) { // 4
+        //         validationCounter++
+        //         $('#newUserPassword').css('border', '1px solid #3498db')
+        //     } else {
+        //         errorMessage += `<br>Debe ingresar una contraseña valida de mas de 5 caracteres`
+        //         $('#newUserPassword').css('border', '1px solid #e74c3c')
+        //     }
 
-        }
+        // }
 
         console.log('validation', validationCounter)
         if(validationCounter == 5) {

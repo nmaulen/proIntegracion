@@ -20,78 +20,78 @@ module.exports = [
                         ]
                     }
 
-                    let userExist = await User.find(query)
+                    let productExist = await Product.find(query)
 
-                    if (request.payload.scope == 'Super Administrador'){
-                        request.payload.scope = "sadmin"
-                    } else if (request.payload.scope == 'Administrador'){
-                        request.payload.scope = "admin"
-                    }
+                    // if (request.payload.scope == 'Super Administrador'){
+                    //     request.payload.scope = "sadmin"
+                    // } else if (request.payload.scope == 'Administrador'){
+                    //     request.payload.scope = "admin"
+                    // }
 
-                    if (userExist[0]) {
+                    if (productExist[0]) {
                         if (request.payload.mod == 'yes') {
 
                             if (request.payload.password == '') {
-                                request.payload.password = userExist[0].password
+                                request.payload.password = productExist[0].password
                             }
 
-                            if (!validatePassword(userExist[0].password, request.payload.password)) {
+                            if (!validatePassword(productExist[0].password, request.payload.password)) {
                                 request.payload.password = hashPassword(request.payload.password)
                             }
 
                             delete request.payload.mod
-                            let user = await User(request.payload);
-                            user._id = userExist[0]._id
-                            let userSaved = await User.findByIdAndUpdate(userExist[0]._id, user)
+                            let product = await Product(request.payload);
+                            product._id = productExist[0]._id
+                            let productSaved = await product.findByIdAndUpdate(productExist[0]._id, product)
 
-                            userSaved.password = '';
+                            productSaved.password = '';
 
-                            return userSaved
+                            return productSaved
 
                         } else {
                             console.log("error1");
                             return {
-                                error: 'El usuario ya existe.'
+                                error: 'El producto ya existe.'
                             }
                         }
                     }
 
-                    // let userPassword = generatePassword()
+                    // let productPassword = generatePassword()
 
-                    //     let newUser = new User({
+                    //     let newproduct = new product({
                     //         cod: payload.cod,
                     //         status: payload.status,
                     //         scope: payload.scope,
-                    //         password: hashPassword(userPassword)
+                    //         password: hashPassword(productPassword)
                     //     })
                     request.payload.password = hashPassword(request.payload.password)
 
                     delete request.payload.mod
-                    let user = await User(request.payload);
+                    let product = await Product(request.payload);
 
-                    let userSaved = await user.save();
+                    let productSaved = await product.save();
 
-                    userSaved.password = '';
+                    productSaved.password = '';
 
-                    return userSaved
+                    return productSaved
 
                 } catch (error) {
                     console.log(error);
                     return {
-                        error: 'Ha ocurrido un error al crear el usuario, por favor recargue la página e intentelo nuevamente.'
+                        error: 'Ha ocurrido un error al crear el producto, por favor recargue la página e intentelo nuevamente.'
                     }
                 }
 
             },
             validate: {
                 payload: Joi.object().keys({
-                    rut: Joi.string().required(),
                     name: Joi.string().required(),
-                    lastname: Joi.string().required(),
-                    password: Joi.string().allow(null, ''),
-                    scope: Joi.string().required(),
-                    phone: Joi.string().allow(null, ''),
-                    email: Joi.string().required(),
+                    brand: Joi.string().required(),
+                    size: Joi.string().allow(null, ''),
+                    color: Joi.string().required(),
+                    qty: Joi.string().allow(null, ''),
+                    category: Joi.string().required(),
+                    price: Joi.string().required(),
                     mod: Joi.string().required()
                 })
             }
@@ -99,7 +99,7 @@ module.exports = [
     },
     {
         method: 'DELETE',
-        path: '/api/users/{_id}',
+        path: '/api/products/{_id}',
         options: {
             auth: { mode: 'try' },
             description: 'check api',
@@ -108,8 +108,8 @@ module.exports = [
             handler: async (request, h) => {
                 try {
                     let params = request.params;
-                    let deleteUser = await User.deleteOne( { _id: params._id } )
-                    if (deleteUser.ok) {
+                    let deleteProduct = await Product.deleteOne( { _id: params._id } )
+                    if (deleteProduct.ok) {
                         return {
                             ok: true
                         };
@@ -128,7 +128,7 @@ module.exports = [
     },
     {
         method: 'GET',
-        path: '/api/users',
+        path: '/api/products',
         options: {
             auth: { mode: 'try' },
             description: 'check api',
@@ -144,7 +144,7 @@ module.exports = [
                         ]
                     }
 
-                    let result = await User.find(query).lean();
+                    let result = await Product.find(query).lean();
 
                     return result.map(el => {
                         delete el.password;
@@ -154,7 +154,7 @@ module.exports = [
                     console.log(error);
 
                     return h.response({
-                        error: 'Ha ocurrido un error al buscar usuarios, por favor recargue la página e intentelo nuevamente.'
+                        error: 'Ha ocurrido un error al buscar productos, por favor recargue la página e intentelo nuevamente.'
                     }).code(500);
                 }
             }
