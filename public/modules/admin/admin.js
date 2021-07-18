@@ -419,8 +419,6 @@ const handleModal = () => {
         <option value="002">002</option>
         <option value="003">003</option>
         <option value="004">004</option>
-        <option value="005">005</option>
-        <option value="006">006</option>
         </select>
         </div>
     <div class="col-md-4" style="margin-top:10px;">
