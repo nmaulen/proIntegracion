@@ -1,342 +1,460 @@
-const internals = {
-	tables: {
-		banners: {
-			datatable: null,
-			rowSelected: null
-		}
-	}
-}
+let datatableShoes
+let datatableDisabledUsers
+let userRowSelected
+let userRowSelectedData
 
-ready(async () => {
-	initBannersTable()
-})
-document.querySelector('#nuevoBannerBtn').addEventListener('click', () => {
-	handleModalBanner()
+$(document).ready(function(){
+    chargeUsersTable()
 })
 
-async function initBannersTable() {
-	await $.when(internals.tables.banners.datatable = $('#bannersTable').DataTable({
-		// dom: 'Bfrtip',
-		language: {
-			url: spanishDataTableLang
-		},
-		rowCallback: function( row, data ) {
-		    $(row).find('td:eq(1)').html('<center> <button type="button" class="btn btn-secondary btn-sm delBanner"><i class="fas fa-trash"></i></button> </center> ')
-		},
-		order: [[1, 'desc']],
-		ordering: true,
-		searchHighlight: true,
-		responsive: false,
-		columns: [
-			{ data: 'nameFile' },
-			{ data: 'nameFileM' },
-			{ data: 'urlBanner'},
-			{ data: 'modificar' },
-			{ data: 'eliminar' }
-		],
-		rowCallback: function (row, data, index) {
-            $(row).find('td:eq(3)').html('<center> <button type="button" class="btn btn-secondary btn-sm modBanner"><i class="fas fa-edit"></i></button> </center> ')
-			$(row).find('td:eq(4)').html('<center> <button type="button" class="btn btn-secondary btn-sm delBanner"><i class="fas fa-trash"></i></button> </center> ')
+function chargeUsersTable() {
+    datatableShoes = $('#tableShoes')
+    .DataTable( {
+        dom: 'Bfrtip',
+        buttons: [
+            'excel'
+        ],
+        ordering: true,
+        iDisplayLength: 50,
+        language: {
+            url: spanishDataTableLang
         },
-	}))
+        responsive: false,
+        columns: [
+            { data: 'sku' },
+            { data: 'brand' },
+            { data: 'model' },
+            { data: 'size' },
+            { data: 'color' }
+        ],
+        initComplete: function (settings, json) {
+            getUsersEnabled()
+        },
+        rowCallback: function( row, data ) {
+            // if (data.scope == "sadmin") $(row).find('td:eq(5)').html("Super Administrador")
+            // if (data.scope == "admin") $(row).find('td:eq(5)').html("Administrador")
+        }
+    })
 
-	loadDataToBannersTable()
 
-	$('#bannersTable tbody').on('click', '.delBanner', async function () {
-		var data = internals.tables.banners.datatable.row($(this).parents('tr')).data();
-
-		dataImg = {
-			filename: data.nameFile
-		}
-
-		await axios.post('/api/deleteBanner', dataImg)
-
-		const swalWithBootstrapButtons = Swal.mixin({
-            customClass: {
-              confirmButton: 'btn btn-danger',
-              cancelButton: 'btn btn-success'
-            },
-            buttonsStyling: false
-          })
-
-          swalWithBootstrapButtons.fire({
-            title: '¿Estas seguro?',
-            text: "No se podra revertir la eliminación de un archivo.",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Si, borrar',
-            cancelButtonText: 'No, cancelar',
-            reverseButtons: true
-          }).then((result) => {
-            if (result.isConfirmed) {
-                
-				internals.tables.banners.datatable
-				.row($(this).parents('tr'))
-				.remove()
-				.draw()
-				toastr.success('imagen Eliminada correctamente')
-
-				swalWithBootstrapButtons.fire(
-				'Eliminado',
-				'',
-				'success'
-				)
-            } else if (
-              /* Read more about handling dismissals below */
-              result.dismiss === Swal.DismissReason.cancel
-            ) {
-				swalWithBootstrapButtons.fire(
-				'Cancelado',
-				'',
-				'error'
-				)
-            }
-        })
-
-	});
-
-	$('#bannersTable tbody').on('click', '.modBanner', function () {
-        var data = internals.tables.banners.datatable.row($(this).parents('tr')).data();
-        // alert("Modificar: " + data.sku);
-        initMod(data)
-		// console.log("aaaaaaaadaa",data);
-
-		// $('#saveBanner').on('click', async function(){
-		// 	saveBanner(data)
-		// })
-    });
+    $('#tableShoes tbody').on('click', 'tr', function () {
+        if ($(this).hasClass('selected')) {
+            $(this).removeClass('selected')
+            $('#optionModShoes').prop('disabled', true)
+            $('#optionDeleteShoe').prop('disabled', true)
+        } else {
+            datatableShoes.$('tr.selected').removeClass('selected');
+            $(this).addClass('selected');
+            $('#optionModShoes').prop('disabled', false)
+            $('#optionDeleteShoe').prop('disabled', false)
+            userRowSelectedData = cleanData(datatableShoes.row($(this)).data())
+            userRowSelected = datatableShoes.row($(this))
+        }
+    })
 }
 
-// async function saveBanner(data) {
-// 	let saveUserRes = await axios.post('/api/users', userData)
-// 	console.log("modUrl", $('#modUrl').val() );
-// }
+function cleanData(data){
+    data.rut = ktoK(cleanRut(data.rut))
 
-async function initMod(ban) {
-
-	const modalMod = {
-		title: document.querySelector('#modal_title'),
-		body: document.querySelector('#modal_body'),
-		footer: document.querySelector('#modal_footer'),
-	}
-
-	modalMod.title.innerHTML = `
-		Modificar Banner: ${ban.nameFile}
-	`
-	modalMod.body.innerHTML = `
-	<div class="row">
-		<div class="col-md-12" style="margin-top:10px;">
-			Direccion Url
-			<input id="modUrl" type="text" value="${ban.urlBanner}" placeholder="Ingrese la url a la cual redireccionará el banner" class="form-control border-input">
-		</div>
-		
-		<div class="col-md-12" style="margin-top:10px;"><br></div>
-
-		<div class="col-md-12" style="margin-top:10px;">
-			Agregar banner mobile</div>
-			<div class="col-md-12" style="margin-top:10px;">
-			<input type="file" id="photoFile" accept=".jpg"/>
-		</div>
-
-		
-
-	</div>
-		`
-	modalMod.footer.innerHTML = `
-	<button class="btn btn-dark" data-dismiss="modal">
-		<i style="color:#e74c3c;" class="fas fa-times"></i> Cancelar
-	</button>
-
-	<button class="btn btn-dark" id="uploadPhoto">
-    	<i style="color:#3498db;" class="fas fa-check"></i> Guardar
-    </button>
-	`
-	$('#modal').modal('show')
-	
-	uploadBanner(ban)
+    return data
 }
 
-const handleModalBanner = () => {
+async function getUsersEnabled() {
+    let res = await axios.get('api/users')
 
-	const modalSelector = {
-		title: document.querySelector('#modal_title'),
-		body: document.querySelector('#modal_body'),
-		footer: document.querySelector('#modal_footer'),
-	}
-
-	modalSelector.title.innerHTML = `
-		Nueva carga de banner
-	`
-
-	modalSelector.body.innerHTML = `
-		<input type="file" id="photoFile" accept=".jpg"/>
-		<!--<img id="imgPreview" src="" alt="Preview">-->
-	`
-
-	modalSelector.footer.innerHTML = `
-    <button class="btn btn-dark" data-dismiss="modal">
-    <i style="color:#e74c3c;" class="fas fa-times"></i> Cancelar
-    </button>
-
-    <button class="btn btn-dark" id="uploadPhoto">
-    <i style="color:#3498db;" class="fas fa-check"></i> Guardar
-    </button>
-	`
-
-	$('#modal').modal('show')
-	uploadBanner()
-}
-
-async function selectSave() {
-	const  swalWithBootstrapButtons = Swal.mixin({
-		customClass: {
-		  confirmButton: 'btn btn-success',
-		  cancelButton: 'btn btn-danger'
-		},
-		buttonsStyling: false
-	})
-
-	let save = await swalWithBootstrapButtons.fire({
-		title: '¿Estas seguro?',
-		text: "",
-		icon: 'warning',
-		showCancelButton: true,
-		confirmButtonText: 'Subir',
-		cancelButtonText: 'Cancelar',
-		reverseButtons: true
-	})
-
-	if (save.isConfirmed) {
-		return true
-
-		// swalWithBootstrapButtons.fire(
-		// 	'El archivo fue subido correctamente',
-		// 	'success'
-		// )
-
-	} else {
-		return false
-	}
-}
-
-
-async function loadDataToBannersTable() {
-    let res = await axios.get('api/bannerNames')
+    // let cate = await axios.get('api/categories')
+    // console.log("categorias", cate.data);
         if (res.err) {
             toastr.warning(res.err)
+            $('#loadingUsers').empty()
         } else if(res.data) {
 
-			res.data.map(el => {
-				// if (!el.urlBanner) el.urlBanner = '-'
-				if (!el.modificar) el.modificar = '-'
-				if (!el.eliminar) el.eliminar = '-'
-			})
+            let formatRes = res.data.map(el=>{
 
-			internals.tables.banners.datatable.clear().draw()
-            internals.tables.banners.datatable.rows.add(res.data).draw()
+                let rut = validateRut(el.rut)
+                if (rut.isValid ) {
+                    el.rut = rut.getNiceRut();
+                }
+
+                return el
+            })
+
+            datatableShoes.rows.add(formatRes).draw()
+            $('#loadingUsers').empty()
         }
 }
 
-async function uploadBanner(ban) {
-	let b64img = ''
-	let nameBan = ''
+$('#optionCreateUser').on('click', function() { // CREAR CLIENTE
 
-	const fileSelector = document.getElementById('photoFile');
-	fileSelector.addEventListener('change', function () {
-		const reader = new FileReader();
-		nameBan = this.files[0].name
+    $('#usersModal').modal('show');
+    $('#modal_title').html(`Nuevo usuario`)
 
-		if (this.files[0].size/1024 > 10000) {
-			toastr.warning('Imagen supera tamaño máximo de 10Mb')
-		} else {
-			reader.addEventListener("load", () => {
-				localStorage.setItem("recent-image", reader.result)
-			})
-	
-			reader.readAsDataURL(this.files[0])
-	
-			reader.onload = function (event) {
-				b64img = event.target.result
-			};
-		}
-	});
+    modNewUser()
 
-	$('#uploadPhoto').on('click', async function () {
-		let confirm = await selectSave()
+    $('#saveUser').on('click', async function(){
+        saveUser()
+    })
 
-		if (internals.tables.banners.datatable.rows().data().length < 6 || ban) {
-			if (confirm) {
-				let varUlr
-				if (!$('#modUrl').val()) { //se envia url
-					varUlr = ''
-				} else {
-					varUlr = $('#modUrl').val()
-				}
-				if (!b64img) { //se envia imagen
-					b64img = ''
-					nameBan = ''
-				}
-	
-				if (b64img == '' && ban == undefined ) {
-					toastr.warning('Debe seleccionar una imagen')
-				} else {
-	
-					let dataImg =
-					{
-						img: b64img,
-						filename: nameBan,
-						urlBanner: varUlr,
-						mod: ban
-					}
-	
-					let saveImage = await axios.post('/api/uploadImg', dataImg)
-	
-					console.log("save imagee", saveImage);
-	
-					if (saveImage.data.ok) {
-						let newBanData = saveImage.data.ok
-	
-						newBanData.modificar = '-'
-						newBanData.eliminar = '-'
-	
-						loadDataToBannersTable()
-						// if (newBanData.nameFileM == '') {
-						// 	let newBannerAdded = internals.tables.banners.datatable
-						// 	.row.add(newBanData)
-						// 	.draw()
-						// 	.node();
-			
-						// 	$(newBannerAdded).css('color', '#1abc9c');
-						// 	setTimeout(() => {
-						// 		$(newBannerAdded).css('color', '#484848');
-						// 	}, 5000);
-						// } else {
-						// 	// internals.tables.banners.datatable
-						// 	// .row(newBanData)
-						// 	// .remove()
-						// 	// .draw();
-	
-						// 	let newBannerAdded = internals.tables.banners.datatable
-						// 	.row.add(newBanData)
-						// 	.draw()
-						// 	.node();
-			
-						// 	$(newBannerAdded).css('color', '#1abc9c');
-						// 	setTimeout(() => {
-						// 		$(newBannerAdded).css('color', '#484848');
-						// 	}, 5000);
-						// }
-						toastr.success('Datos cargados correctamente')
-						$('#modal').modal('hide')
-					} else {
-						toastr.warning(saveImage.data.err)
-					}
-				}
-			}
-		} else {
-			toastr.warning('No es posible ingresar mas de 6 banners, por favor elimine alguno')
-		}
+});
 
-		
-	});
+$('#optionDeleteShoe').on('click', function() {
+    deleteUser(userRowSelectedData._id, userRowSelectedData.name, userRowSelectedData.scope)
+
+})
+
+async function deleteUser(_id, name, rol) {
+    console.log("rol", rol);
+    if (rol !== "sadmin") {
+        let result = await Swal.fire({
+            title: `Eliminar usuario ${name}`,
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            buttonsStyling: false,
+            confirmButtonText: 'Aceptar',
+            cancelButtonText: 'Cancelar',
+            customClass: {
+                confirmButton: 'btn btn-danger',
+                cancelButton: 'btn btn-primary'
+            }
+        });
+    
+        if (result.value) {
+            //let delUser = await axios.delete(`api/users/${_id}`);
+    
+            if (delUser.data.ok) {
+                $('#optionModShoes').prop('disabled', true)
+                $('#optionDeleteShoe').prop('disabled', true)
+                toastr.success(`Usuario "${name}" eliminado correctamente`);
+                datatableShoes
+                .row( userRowSelected )
+                .remove()
+                .draw()
+    
+            } else {
+                toastr.warning(`Ha ocurrido un error al intentar eliminar`);
+            }
+        }
+    }
+    toastr.warning(`Usuario "${name}" no puede ser eliminado`);
+
+}
+
+
+
+
+$('#optionModShoes').on('click', function() {
+    $('#usersModal').modal('show');
+    $('#modal_title').html(`Modificar usuario: ${capitalizeAll(userRowSelectedData.name)} ${capitalizeAll(userRowSelectedData.lastname)}`)
+    modNewUser(userRowSelectedData)
+
+    let mod = 'yes'
+    $('#saveUser').on('click', async function(){
+        saveUser(mod)
+    })
+})
+
+const rutFunc = (rut) => {
+    return $.formatRut(rut)
+}
+
+function modNewUser(modUserData) {   //NEW AND MOD USER
+    $.when($('#modal_body').html(`
+    <div class="row">
+        <div class="col-md-4" style="margin-top:10px;">
+        Rut del usuario
+            <input id="newUserRut" type="text" placeholder="Rut del usuario" class="form-control border-input">
+        </div>
+
+        <div class="col-md-4" style="margin-top:10px;">
+        Nombre del usuario
+            <input id="newUserName" type="text" placeholder="Nombre del usuario " class="form-control border-input">
+        </div>
+
+        <div class="col-md-4" style="margin-top:10px;">
+        Apellido del usuario
+            <input id="newUserLastname" type="text" placeholder="Apellido del usuario" class="form-control border-input">
+        </div>
+
+        <div class="col-md-3" style="margin-top:10px;">
+        Contraseña del usuario
+            <input id="newUserPassword" type="password" placeholder="Contraseña del usuario" class="form-control border-input">
+        </div>
+
+        <div class="col-md-1" style="margin-top:14px; font-size: 16px;">
+        <i class="fas fa-eye"></i>
+        <input type="checkbox" onclick="showPass()">
+        </div>
+
+        <div class="col-md-4" style="margin-top:10px;">
+        Rol del usuario
+            <!--<select id="newUserRole" class="custom-select">
+                <option value="admin">Administrador</option>
+                <option value="sadmin">Super Administrador</option>
+            </select>-->
+            <input id="newUserRole" type="text" value="Administrador" class="form-control border-input" readOnly>
+        </div>
+
+        <div class="col-md-4" style="margin-top:10px;">
+        Teléfono del usuario
+            <input id="newUserPhone" type="text" placeholder="Teléfono del usuario " class="form-control border-input">
+        </div>
+
+        <div class="col-md-4" style="margin-top:10px;">
+        Email
+            <input id="newUserEmail" type="text" placeholder="Email" class="form-control border-input">
+        </div>
+
+        <div class="col-md-12" id="newUserErrorMessage"></div>
+
+    </div>
+`)).then(function () {
+
+    $('#newUserRut').on('keyup', function() {
+        let rut = validateRut(this.value)
+        if (rut.isValid ) {
+            $('#newUserRut').val(rut.getNiceRut())
+        }
+    })
+
+    $('#newUserName').on('keyup', function() {
+        $('#newUserName').val(removeSpecials(this.value))
+    })
+    $('#newUserLastname').on('keyup', function() {
+        $('#newUserLastname').val(removeSpecials(this.value))
+    })
+
+    if (!modUserData) {
+        setTimeout(() => {
+            $('#newUserRut').focus()
+        }, 500)
+    } else {
+        let ruto = validateRut(modUserData.rut)
+        let rutVal
+        if (ruto.isValid ) {
+            rutVal = ruto.getNiceRut()
+        } else {
+            rutVal = modUserData.rut
+        }
+        $('#newUserRut').val(rutVal);
+        $('#newUserRut').attr('readOnly', true);
+        $('#newUserName').val(modUserData.name);
+        $('#newUserLastname').val(modUserData.lastname);
+
+        if (modUserData.scope == 'admin' || modUserData.scope == 'Administrador') {
+            // $('#newUserRole').val('admin').trigger("change");
+            $('#newUserRole').val('Administrador');
+        } else if (modUserData.scope == 'sadmin' || modUserData.scope == 'Super Administrador') {
+            $('#newUserRole').val('Super Administrador');
+        }
+
+        $('#newUserPhone').val(modUserData.phone);
+        $('#newUserEmail').val(modUserData.email);
+
+    }
+    
+//-------------------------------------------------------------
+
+
+    });
+
+    $('#modal_footer').html(`
+        <button class="btn btn-dark" data-dismiss="modal">
+            <i style="color:#e74c3c;" class="fas fa-times"></i> Cancelar
+        </button>
+
+        <button class="btn btn-dark" id="saveUser">
+            <i style="color:#3498db;" class="fas fa-check"></i> Guardar
+        </button>
+    `)
+
+}
+
+function showPass() {
+    var x = document.getElementById("newUserPassword");
+    if (x.type === "password") {
+      x.type = "text";
+    } else {
+      x.type = "password";
+    }
+  }
+
+async function saveUser(mod) {
+
+    let userData = {
+        rut: cleanRut($('#newUserRut').val()),
+        name: removeExtraSpaces($('#newUserName').val()),
+        lastname: $('#newUserLastname').val(),
+        password: $('#newUserPassword').val(),
+        scope: $('#newUserRole').val(),
+        phone: $('#newUserPhone').val(),
+        email: $('#newUserEmail').val(),
+        mod: 'no'
+    }
+    if (mod) userData.mod = mod
+
+    let validUser = await validateUserData(userData)
+    if (validUser.ok) {
+        let saveUserRes = await axios.post('/api/users', userData)
+        if(!saveUserRes.data.error) {
+            if (mod) {
+                toastr.success('El usuario se ha modificado correctamente')
+
+                let rut = validateRut(saveUserRes.data.rut)
+                if (rut.isValid ) {
+                    saveUserRes.data.rut = rut.getNiceRut()
+                }
+
+                if (saveUserRes.data.scope == 'admin') saveUserRes.data.scope = "Administrador"
+                if (saveUserRes.data.scope == 'sadmin') saveUserRes.data.scope = "Super Administrador"
+
+                $('#optionModShoes').prop('disabled', true)
+                $('#optionDeleteShoe').prop('disabled', true)
+
+                datatableShoes
+                .row( userRowSelected )
+                .remove()
+                .draw()
+
+                let modUserAdded = datatableShoes
+                .row.add(saveUserRes.data)
+                .draw()
+                .node();
+
+                //datatableShoes.search('').draw();
+
+                $(modUserAdded).css( 'color', '#1abc9c' )
+                setTimeout(() => {
+                    $(modUserAdded).css( 'color', '#484848' )
+                }, 5000);
+
+                $('#usersModal').modal('hide')
+
+            } else {
+                toastr.success('El usuario se ha creado correctamente')
+
+                let rut = validateRut(saveUserRes.data.rut)
+                if (rut.isValid ) {
+                    saveUserRes.data.rut = rut.getNiceRut()
+                }
+
+                if (saveUserRes.data.scope == 'admin') saveUserRes.data.scope = "Administrador"
+                if (saveUserRes.data.scope == 'sadmin') saveUserRes.data.scope = "Super Administrador"
+
+                $('#optionModShoes').prop('disabled', true)
+                $('#optionDeleteShoe').prop('disabled', true)
+
+                let newUserAdded = datatableShoes
+                    .row.add(saveUserRes.data)
+                    .draw()
+                    .node();
+    
+                $(newUserAdded).css('color', '#1abc9c');
+                setTimeout(() => {
+                    $(newUserAdded).css('color', '#484848');
+                }, 5000);
+    
+                $('#usersModal').modal('hide')
+            }
+        } else {
+            toastr.warning(saveUserRes.data.error)
+        }
+
+    } else {
+        toastr.warning('Ha ocurrido un error al crear el usuario, por favor intentelo nuevamente')
+    }
+
+}
+
+async function validateUserData(userData) {
+    console.log(userData)
+    let validationCounter = 0
+    let errorMessage = ''
+
+    // return new Promise(resolve=>{
+        // 5 puntos
+
+        if(userData.rut.length >= 6 && isRut(userData.rut)) { // 1
+            validationCounter++
+            $('#newUserRut').css('border', '1px solid #3498db')
+        } else {
+            errorMessage += `<br>Debe ingresar el rut del usuario`
+            $('#newUserRut').css('border', '1px solid #e74c3c')
+        }
+
+        if(userData.name.length > 1) { // 2
+            validationCounter++
+            $('#newUserName').css('border', '1px solid #3498db')
+        } else {
+            errorMessage += `<br>Debe ingresar el nombre del usuario</b>`
+            $('#newUserName').css('border', '1px solid #e74c3c')
+        }
+
+        if(userData.lastname.length > 1) { // 3
+            validationCounter++
+            $('#newUserLastname').css('border', '1px solid #3498db')
+        } else {
+            errorMessage += `<br>Debe ingresar el apellido del usuario`
+            $('#newUserLastname').css('border', '1px solid #e74c3c')
+        }
+
+
+        // if(userData.phone.length > 1) { // 5
+        //     validationCounter++
+        //     $('#newUserPhone').css('border', '1px solid #3498db')
+        // } else {
+        //     errorMessage += `<br>Debe ingresar el teléfono del usuario`
+        //     $('#newUserPhone').css('border', '1px solid #e74c3c')
+        // }
+
+        if(isEmail(userData.email)) { // 6
+            validationCounter++
+            $('#newUserEmail').css('border', '1px solid #3498db')
+        } else {
+            errorMessage += `<br>Debe ingresar el correo del usuario`
+            $('#newUserEmail').css('border', '1px solid #e74c3c')
+        }
+
+        if (userData.mod == 'yes') {
+
+            if(userData.changePassword) {
+                if(userData.password.length > 1) { // 4
+                    validationCounter++
+                    $('#modUserPassword').css('border', '1px solid #3498db')
+                } else {
+                    errorMessage += `<br>Debe ingresar una contraseña`
+                    $('#modUserPassword').css('border', '1px solid #e74c3c')
+                }
+            } else {
+                validationCounter++
+            }
+
+        } else {
+            if(userData.password.length > 5) { // 4
+                validationCounter++
+                $('#newUserPassword').css('border', '1px solid #3498db')
+            } else {
+                errorMessage += `<br>Debe ingresar una contraseña valida de mas de 5 caracteres`
+                $('#newUserPassword').css('border', '1px solid #e74c3c')
+            }
+
+        }
+
+        console.log('validation', validationCounter)
+        if(validationCounter == 5) {
+            $('#newUserErrorMessage').empty()
+            return {ok: userData}
+        } else {
+            $('#newUserErrorMessage').html(`
+            <div class="alert alert-dismissible alert-warning">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                <h4 class="alert-heading">Debe solucionar los siguientes errores</h4>
+                <p class="mb-0">${errorMessage}</p>
+            </div>
+            `)
+
+            return {err: userData}
+        }
+    // })
 }
