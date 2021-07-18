@@ -21,11 +21,15 @@ function chargeUsersTable() {
         },
         responsive: false,
         columns: [
-            { data: 'sku' },
+            { data: 'code' },
+            { data: 'name' },
             { data: 'brand' },
-            { data: 'model' },
             { data: 'size' },
-            { data: 'color' }
+            { data: 'color' },
+            { data: 'qty'},
+            { data: 'category'},
+            { data: 'price'},
+            { data: 'date'}
         ],
         initComplete: function (settings, json) {
             getUsersEnabled()
@@ -60,7 +64,7 @@ function cleanData(data){
 }
 
 async function getUsersEnabled() {
-    let res = await axios.get('api/users')
+    let res = await axios.get('api/product')
 
     // let cate = await axios.get('api/categories')
     // console.log("categorias", cate.data);
@@ -84,10 +88,10 @@ async function getUsersEnabled() {
         }
 }
 
-$('#optionCreateUser').on('click', function() { // CREAR CLIENTE
+$('#optionCreateShoe').on('click', function() { // CREAR CLIENTE
 
-    $('#usersModal').modal('show');
-    $('#modal_title').html(`Nuevo usuario`)
+    $('#shoesModal').modal('show');
+    $('#modal_title').html(`Nuevo calzado`)
 
     modNewUser()
 
@@ -145,7 +149,7 @@ async function deleteUser(_id, name, rol) {
 
 
 $('#optionModShoes').on('click', function() {
-    $('#usersModal').modal('show');
+    $('#shoesModal').modal('show');
     $('#modal_title').html(`Modificar usuario: ${capitalizeAll(userRowSelectedData.name)} ${capitalizeAll(userRowSelectedData.lastname)}`)
     modNewUser(userRowSelectedData)
 
@@ -163,42 +167,34 @@ function modNewUser(modUserData) {   //NEW AND MOD USER
     $.when($('#modal_body').html(`
     <div class="row">
         <div class="col-md-4" style="margin-top:10px;">
-        Rut del usuario
-            <input id="newUserRut" type="text" placeholder="Rut del usuario" class="form-control border-input">
+        Nombre del producto
+            <input id="namePro" type="text" placeholder="Nombre del producto" class="form-control border-input">
         </div>
 
         <div class="col-md-4" style="margin-top:10px;">
-        Nombre del usuario
-            <input id="newUserName" type="text" placeholder="Nombre del usuario " class="form-control border-input">
+        Marca del producto
+            <input id="brandPro" type="text" placeholder=" usuario " class="form-control border-input">
         </div>
 
         <div class="col-md-4" style="margin-top:10px;">
-        Apellido del usuario
-            <input id="newUserLastname" type="text" placeholder="Apellido del usuario" class="form-control border-input">
-        </div>
-
-        <div class="col-md-3" style="margin-top:10px;">
-        Contraseña del usuario
-            <input id="newUserPassword" type="password" placeholder="Contraseña del usuario" class="form-control border-input">
-        </div>
-
-        <div class="col-md-1" style="margin-top:14px; font-size: 16px;">
-        <i class="fas fa-eye"></i>
-        <input type="checkbox" onclick="showPass()">
+        Talla
+            <input id="sizePro" type="text" placeholder="Talla" class="form-control border-input">
         </div>
 
         <div class="col-md-4" style="margin-top:10px;">
-        Rol del usuario
-            <!--<select id="newUserRole" class="custom-select">
-                <option value="admin">Administrador</option>
-                <option value="sadmin">Super Administrador</option>
-            </select>-->
-            <input id="newUserRole" type="text" value="Administrador" class="form-control border-input" readOnly>
+        Color
+            <input id="colorPro" type="text" placeholder="Color" class="form-control border-input">
         </div>
-
         <div class="col-md-4" style="margin-top:10px;">
-        Teléfono del usuario
-            <input id="newUserPhone" type="text" placeholder="Teléfono del usuario " class="form-control border-input">
+        Categoria
+        <select id="categoryPro" class="custom-select">
+        <option value="vestir">Vestir</option>
+        <option value="escolar">Escolar</option>
+        <option value="deporte">Deporte</option>
+        <option value="formal">Formal</option>
+        <option value="verano">Verano</option>
+        <option value="invierno">Invierno/<option>
+        </select>
         </div>
 
         <div class="col-md-4" style="margin-top:10px;">
@@ -211,15 +207,15 @@ function modNewUser(modUserData) {   //NEW AND MOD USER
     </div>
 `)).then(function () {
 
-    $('#newUserRut').on('keyup', function() {
+    $('#namePro').on('keyup', function() {
         let rut = validateRut(this.value)
         if (rut.isValid ) {
-            $('#newUserRut').val(rut.getNiceRut())
+            $('#namePro').val(rut.getNiceRut())
         }
     })
 
-    $('#newUserName').on('keyup', function() {
-        $('#newUserName').val(removeSpecials(this.value))
+    $('#brandPro').on('keyup', function() {
+        $('#brandPro').val(removeSpecials(this.value))
     })
     $('#newUserLastname').on('keyup', function() {
         $('#newUserLastname').val(removeSpecials(this.value))
@@ -227,7 +223,7 @@ function modNewUser(modUserData) {   //NEW AND MOD USER
 
     if (!modUserData) {
         setTimeout(() => {
-            $('#newUserRut').focus()
+            $('#namePro').focus()
         }, 500)
     } else {
         let ruto = validateRut(modUserData.rut)
@@ -237,9 +233,9 @@ function modNewUser(modUserData) {   //NEW AND MOD USER
         } else {
             rutVal = modUserData.rut
         }
-        $('#newUserRut').val(rutVal);
-        $('#newUserRut').attr('readOnly', true);
-        $('#newUserName').val(modUserData.name);
+        $('#namePro').val(rutVal);
+        $('#namePro').attr('readOnly', true);
+        $('#brandPro').val(modUserData.name);
         $('#newUserLastname').val(modUserData.lastname);
 
         if (modUserData.scope == 'admin' || modUserData.scope == 'Administrador') {
@@ -283,8 +279,8 @@ function showPass() {
 async function saveUser(mod) {
 
     let userData = {
-        rut: cleanRut($('#newUserRut').val()),
-        name: removeExtraSpaces($('#newUserName').val()),
+        rut: cleanRut($('#namePro').val()),
+        name: removeExtraSpaces($('#brandPro').val()),
         lastname: $('#newUserLastname').val(),
         password: $('#newUserPassword').val(),
         scope: $('#newUserRole').val(),
@@ -329,7 +325,7 @@ async function saveUser(mod) {
                     $(modUserAdded).css( 'color', '#484848' )
                 }, 5000);
 
-                $('#usersModal').modal('hide')
+                $('#shoesModal').modal('hide')
 
             } else {
                 toastr.success('El usuario se ha creado correctamente')
@@ -355,7 +351,7 @@ async function saveUser(mod) {
                     $(newUserAdded).css('color', '#484848');
                 }, 5000);
     
-                $('#usersModal').modal('hide')
+                $('#shoesModal').modal('hide')
             }
         } else {
             toastr.warning(saveUserRes.data.error)
@@ -377,18 +373,18 @@ async function validateUserData(userData) {
 
         if(userData.rut.length >= 6 && isRut(userData.rut)) { // 1
             validationCounter++
-            $('#newUserRut').css('border', '1px solid #3498db')
+            $('#namePro').css('border', '1px solid #3498db')
         } else {
             errorMessage += `<br>Debe ingresar el rut del usuario`
-            $('#newUserRut').css('border', '1px solid #e74c3c')
+            $('#namePro').css('border', '1px solid #e74c3c')
         }
 
         if(userData.name.length > 1) { // 2
             validationCounter++
-            $('#newUserName').css('border', '1px solid #3498db')
+            $('#brandPro').css('border', '1px solid #3498db')
         } else {
             errorMessage += `<br>Debe ingresar el nombre del usuario</b>`
-            $('#newUserName').css('border', '1px solid #e74c3c')
+            $('#brandPro').css('border', '1px solid #e74c3c')
         }
 
         if(userData.lastname.length > 1) { // 3
