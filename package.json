@@ -1,0 +1,52 @@
+{
+  "name": "pro1",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "dev": "nodemon --exec babel-node src/app.js",
+    "build": "babel src --out-dir dist",
+    "start": "node dist/app.js",
+    "start:production": "pm2 start ./dist/app.js --name demo_project_n",
+    "stop:production": "pm2 stop demo_project_n",
+    "restart:production": "npm run stop:production && npm run start:production"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "public/*"
+    ]
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/cli": "^7.14.5",
+    "@babel/core": "^7.14.6",
+    "@babel/node": "^7.14.7",
+    "@babel/preset-env": "^7.14.7",
+    "eslint": "^7.29.0",
+    "nodemon": "^2.0.7"
+  },
+  "dependencies": {
+    "@hapi/boom": "^9.1.2",
+    "@hapi/catbox-redis": "^6.0.2",
+    "@hapi/cookie": "^11.0.2",
+    "@hapi/hapi": "^20.1.4",
+    "@hapi/inert": "^6.0.3",
+    "@hapi/vision": "^6.1.0",
+    "axios": "^0.21.1",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^10.0.0",
+    "generate-password": "^1.6.0",
+    "handlebars": "^4.7.7",
+    "handlebars-extend-block": "^1.0.0",
+    "hapi-auth-jwt2": "^10.2.0",
+    "hapi-redis2": "^3.0.1",
+    "hapi-router": "^4.0.1",
+    "hapi-swagger": "^14.2.1",
+    "joi": "^17.4.1",
+    "moment": "^2.29.1",
+    "mongoose": "^5.13.3",
+    "rut.js": "^2.0.0",
+    "sweetalert2": "^11.0.18"
+  }
+}

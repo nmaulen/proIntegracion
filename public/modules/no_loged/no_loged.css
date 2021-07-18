@@ -1,0 +1,29 @@
+:root {
+    --blue: #005EB8;
+    --dark:#222222;
+    --grey: #DDDDDD;
+    --white: #FFFFFF;
+    --dark1: #292929;
+}
+@font-face {
+    font-family: SFProDisplay;
+    src: url('/public/fonts/SFProDisplay.ttc');
+    font-weight: normal;
+}
+
+html {
+    font-family: SFProDisplay;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: SFProDisplay;
+    margin: 0;
+    padding: 0;
+    background-color: white;
+    color: #000;
+    font-weight: normal;
+}
+

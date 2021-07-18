@@ -1,0 +1,36 @@
+
+.container-fluid{
+    padding-bottom: 20px;
+    background-color: #005EB8;
+}
+
+.fa-user-plus {
+    color: #005EB8;
+}
+
+.fa-user-edit {
+    color: #f1c40f;
+}
+
+.fa-user-times {
+    color: #e74c3c;
+}
+
+h3{
+    display: flex;
+    justify-content: center;
+}
+.toastr-warning{
+    background-color: red;
+}
+
+input[type=checkbox], input[type=radio] {
+    box-sizing: border-box;
+    padding: 0;
+    margin-left: 3px;
+}
+
+.fa-eye:before {
+    content: "\f06e";
+    font-size: 15px;
+}
