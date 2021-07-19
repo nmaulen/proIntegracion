@@ -3,39 +3,42 @@ let datatableDisabledUsers
 let userRowSelected
 let userRowSelectedData
 
-// $(document).ready(function(){
-//     chargeUsersTable()
-// })
+$(document).ready(function(){
+    chargeUsersTable()
+})
 
 function chargeUsersTable() {
-    loadingHandler('start')
-    await $.when(internals.tables.products.datatable = $('#productsTable').DataTable({
+    datatableShoes = $('#tableShoes')
+    .DataTable( {
+        dom: 'Bfrtip',
+        buttons: [
+            'excel'
+        ],
+        ordering: true,
+        iDisplayLength: 50,
         language: {
             url: spanishDataTableLang
         },
-
-        // rowCallback: function( row, data ) {
-        //     $(row).find('td:eq(1)').html(capitalizeAll(data.name))
-        // },
-        order: [[1, 'desc']],
-        columnDefs: [
-            { "width": "100px", "targets": 0 },
-            { "width": "1150px", "targets": 1 }
-        ],
-        ordering: true,
-        searchHighlight: true,
         responsive: false,
         columns: [
             { data: 'code' },
             { data: 'name' },
-            { data: 'brand'},
+            { data: 'brand' },
             { data: 'size' },
             { data: 'color' },
-            { data: 'qty' },
+            { data: 'qty'},
             { data: 'category'},
-            { data: 'price'}
-        ]
-    }))
+            { data: 'price'},
+            { data: 'date'}
+        ],
+        initComplete: function (settings, json) {
+            getUsersEnabled()
+        },
+        rowCallback: function( row, data ) {
+            // if (data.scope == "sadmin") $(row).find('td:eq(5)').html("Super Administrador")
+            // if (data.scope == "admin") $(row).find('td:eq(5)').html("Administrador")
+        }
+    })
 
 
     $('#tableShoes tbody').on('click', 'tr', function () {
@@ -61,7 +64,7 @@ function chargeUsersTable() {
 // }
 
 async function getUsersEnabled() {
-    let res = await axios.get('api/products')
+    let res = await axios.get('api/product')
 
     // let cate = await axios.get('api/categories')
     // console.log("categorias", cate.data);
@@ -70,15 +73,15 @@ async function getUsersEnabled() {
             $('#loadingUsers').empty()
         } else if(res.data) {
 
-            // let formatRes = res.data.map(el=>{
+            let formatRes = res.data.map(el=>{
 
-            //     let rut = validateRut(el.rut)
-            //     if (rut.isValid ) {
-            //         el.rut = rut.getNiceRut();
-            //     }
+                let rut = validateRut(el.rut)
+                if (rut.isValid ) {
+                    el.rut = rut.getNiceRut();
+                }
 
-            //     return el
-            // })
+                return el
+            })
 
             datatableShoes.rows.add(formatRes).draw()
             $('#loadingUsers').empty()
@@ -156,9 +159,9 @@ $('#optionModShoes').on('click', function() {
     })
 })
 
-// const rutFunc = (rut) => {
-//     return $.formatRut(rut)
-// }
+const rutFunc = (rut) => {
+    return $.formatRut(rut)
+}
 
 function modNewUser(modUserData) {   //NEW AND MOD USER
     $.when($('#modal_body').html(`
@@ -202,7 +205,7 @@ function modNewUser(modUserData) {   //NEW AND MOD USER
 
         <div class="col-md-4" style="margin-top:10px;">
         Precio
-            <input id="pricePro" type="text" placeholder="Cantidad" class="form-control border-input">
+            <input id="pricePro" type="text" placeholder="Precio" class="form-control border-input">
         </div>
 
         <div class="col-md-12" id="newUserErrorMessage"></div>
@@ -305,19 +308,19 @@ async function saveUser(mod) {
     if (mod) userData.mod = mod
 
     let validUser = await validateUserData(userData)
-    if (validUser.ok) {
-        let saveUserRes = await axios.post('/api/products', userData)
+    if (validUser) {
+        let saveUserRes = await axios.post('/api/users', userData)
         if(!saveUserRes.data.error) {
             if (mod) {
                 toastr.success('El producto se ha modificado correctamente')
 
-                // let rut = validateRut(saveUserRes.data.rut)
-                // if (rut.isValid ) {
-                //     saveUserRes.data.rut = rut.getNiceRut()
-                // }
+                let rut = validateRut(saveUserRes.data.rut)
+                if (rut.isValid ) {
+                    saveUserRes.data.rut = rut.getNiceRut()
+                }
 
-                // if (saveUserRes.data.scope == 'admin') saveUserRes.data.scope = "Administrador"
-                // if (saveUserRes.data.scope == 'sadmin') saveUserRes.data.scope = "Super Administrador"
+                if (saveUserRes.data.scope == 'admin') saveUserRes.data.scope = "Administrador"
+                if (saveUserRes.data.scope == 'sadmin') saveUserRes.data.scope = "Super Administrador"
 
                 $('#optionModShoes').prop('disabled', true)
                 $('#optionDeleteShoe').prop('disabled', true)
@@ -344,13 +347,13 @@ async function saveUser(mod) {
             } else {
                 toastr.success('El producto se ha creado correctamente')
 
-                // let rut = validateRut(saveUserRes.data.rut)
-                // if (rut.isValid ) {
-                //     saveUserRes.data.rut = rut.getNiceRut()
-                // }
+                let rut = validateRut(saveUserRes.data.rut)
+                if (rut.isValid ) {
+                    saveUserRes.data.rut = rut.getNiceRut()
+                }
 
-                // if (saveUserRes.data.scope == 'admin') saveUserRes.data.scope = "Administrador"
-                // if (saveUserRes.data.scope == 'sadmin') saveUserRes.data.scope = "Super Administrador"
+                if (saveUserRes.data.scope == 'admin') saveUserRes.data.scope = "Administrador"
+                if (saveUserRes.data.scope == 'sadmin') saveUserRes.data.scope = "Super Administrador"
 
                 $('#optionModShoes').prop('disabled', true)
                 $('#optionDeleteShoe').prop('disabled', true)
@@ -385,7 +388,7 @@ async function validateUserData(userData) {
     // return new Promise(resolve=>{
         // 5 puntos
 
-        if(userData.name.length > 1 ) { // 1
+        if(userData.name.length > 1) { // 1
             validationCounter++
             $('#namePro').css('border', '1px solid #3498db')
         } else {
@@ -486,19 +489,19 @@ async function validateUserData(userData) {
         // }
 
         console.log('validation', validationCounter)
-        if(validationCounter == 5) {
-            $('#newUserErrorMessage').empty()
-            return {ok: userData}
-        } else {
-            $('#newUserErrorMessage').html(`
-            <div class="alert alert-dismissible alert-warning">
-                <button type="button" class="close" data-dismiss="alert">&times;</button>
-                <h4 class="alert-heading">Debe solucionar los siguientes errores</h4>
-                <p class="mb-0">${errorMessage}</p>
-            </div>
-            `)
+        // if(validationCounter == 5) {
+        //     $('#newUserErrorMessage').empty()
+        //     return {ok: userData}
+        // } else {
+        //     $('#newUserErrorMessage').html(`
+        //     <div class="alert alert-dismissible alert-warning">
+        //         <button type="button" class="close" data-dismiss="alert">&times;</button>
+        //         <h4 class="alert-heading">Debe solucionar los siguientes errores</h4>
+        //         <p class="mb-0">${errorMessage}</p>
+        //     </div>
+        //     `)
 
-            return {err: userData}
-        }
+        //     return {err: userData}
+        // }
     // })
 }
