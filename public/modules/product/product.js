@@ -222,9 +222,6 @@ function modNewUser(modUserData) {   //NEW AND MOD USER
     })
     $('#namePro').on('keyup', function() {
         $('#namePro').val((this.value))
-        // if (rut.isValid ) {
-        //     $('#namePro').val(rut.getNiceRut())
-        // }
     })
 
     $('#brandPro').on('keyup', function() {
@@ -259,9 +256,10 @@ function modNewUser(modUserData) {   //NEW AND MOD USER
         //     rutVal = modUserData.rut
         // }
         // $('#namePro').val(rutVal);
+        $('#codePro').val(modUserData.code);
         $('#namePro').attr('readOnly', true);
-        $('#brandPro').val(modUserData.name);
-        $('#sizePro').val(modUserData.lastname);
+        $('#brandPro').val(modUserData.brand);
+        $('#sizePro').val(modUserData.size);
 
         // if (modUserData.scope == 'admin' || modUserData.scope == 'Administrador') {
         //     // $('#newUserRole').val('admin').trigger("change");
@@ -270,8 +268,10 @@ function modNewUser(modUserData) {   //NEW AND MOD USER
         //     $('#newUserRole').val('Super Administrador');
         // }
 
-        $('#newUserPhone').val(modUserData.phone);
-        $('#newUserEmail').val(modUserData.email);
+        $('#colorPro').val(modUserData.color);
+        $('#qtyPro').val(modUserData.qty);
+        $('#categoryPro').val(modUserData.category);
+        $('#pricePro').val(modUserData.price);
 
     }
     
