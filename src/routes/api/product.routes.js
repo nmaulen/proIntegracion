@@ -64,7 +64,7 @@ module.exports = [
                     //         scope: payload.scope,
                     //         password: hashPassword(productPassword)
                     //     })
-                    request.payload.password = hashPassword(request.payload.password)
+                    // request.payload.password = hashPassword(request.payload.password)
 
                     delete request.payload.mod
                     let product = await Product(request.payload);
@@ -92,8 +92,7 @@ module.exports = [
                     color: Joi.string().required(),
                     qty: Joi.string().allow(null, ''),
                     category: Joi.string().required(),
-                    price: Joi.string().required(),
-                    mod: Joi.string().required()
+                    price: Joi.string().required()
                 })
             }
         }

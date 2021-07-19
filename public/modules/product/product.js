@@ -217,6 +217,9 @@ function modNewUser(modUserData) {   //NEW AND MOD USER
     </div>
 `)).then(function () {
 
+    $('#codePro').on('keyup', function() {
+        $('#codePro').val((this.value))
+    })
     $('#namePro').on('keyup', function() {
         $('#namePro').val((this.value))
         // if (rut.isValid ) {
