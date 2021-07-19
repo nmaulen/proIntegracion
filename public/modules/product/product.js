@@ -124,7 +124,7 @@ async function deleteUser(_id, name, rol) {
         });
     
         if (result.value) {
-            //let delUser = await axios.delete(`api/users/${_id}`);
+            let delUser = await axios.delete(`api/products/${_id}`);
     
             if (delUser.data.ok) {
                 $('#optionModShoes').prop('disabled', true)
