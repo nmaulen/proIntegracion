@@ -15,7 +15,7 @@ module.exports = [
                     let query = {
                         $or: [
                             {
-                                sku: request.payload.rut
+                                code: request.payload.code
                             }
                         ]
                     }
