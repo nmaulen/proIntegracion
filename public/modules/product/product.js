@@ -28,8 +28,7 @@ function chargeUsersTable() {
             { data: 'color' },
             { data: 'qty'},
             { data: 'category'},
-            { data: 'price'},
-            { data: 'date'}
+            { data: 'price'}
         ],
         initComplete: function (settings, json) {
             getUsersEnabled()
@@ -64,7 +63,7 @@ function chargeUsersTable() {
 // }
 
 async function getUsersEnabled() {
-    let res = await axios.get('api/product')
+    let res = await axios.get('api/products')
 
     // let cate = await axios.get('api/categories')
     // console.log("categorias", cate.data);
@@ -73,17 +72,17 @@ async function getUsersEnabled() {
             $('#loadingUsers').empty()
         } else if(res.data) {
 
-            let formatRes = res.data.map(el=>{
+            // let formatRes = res.data.map(el=>{
 
-                let rut = validateRut(el.rut)
-                if (rut.isValid ) {
-                    el.rut = rut.getNiceRut();
-                }
+            //     let rut = validateRut(el.rut)
+            //     if (rut.isValid ) {
+            //         el.rut = rut.getNiceRut();
+            //     }
 
-                return el
-            })
+            //     return el
+            // })
 
-            datatableShoes.rows.add(formatRes).draw()
+            datatableShoes.rows.add(res.data).draw()
             $('#loadingUsers').empty()
         }
 }
@@ -95,8 +94,8 @@ $('#optionCreateShoe').on('click', function() { // CREAR CLIENTE
 
     modNewUser()
 
-    $('#saveUser').on('click', async function(){
-        saveUser()
+    $('#saveProd').on('click', async function(){
+        saveProd()
     })
 
 });
@@ -154,8 +153,8 @@ $('#optionModShoes').on('click', function() {
     modNewUser(userRowSelectedData)
 
     let mod = 'yes'
-    $('#saveUser').on('click', async function(){
-        saveUser(mod)
+    $('#saveProd').on('click', async function(){
+        saveProd(mod)
     })
 })
 
@@ -278,7 +277,7 @@ function modNewUser(modUserData) {   //NEW AND MOD USER
             <i style="color:#e74c3c;" class="fas fa-times"></i> Cancelar
         </button>
 
-        <button class="btn btn-dark" id="saveUser">
+        <button class="btn btn-dark" id="saveProd">
             <i style="color:#3498db;" class="fas fa-check"></i> Guardar
         </button>
     `)
@@ -294,7 +293,7 @@ function showPass() {
     }
   }
 
-async function saveUser(mod) {
+async function saveProd(mod) {
 
     let userData = {
         name: ($('#namePro').val()),
@@ -308,19 +307,20 @@ async function saveUser(mod) {
     if (mod) userData.mod = mod
 
     let validUser = await validateUserData(userData)
+
     if (validUser) {
-        let saveUserRes = await axios.post('/api/users', userData)
-        if(!saveUserRes.data.error) {
+        let saveProdRes = await axios.post('/api/product', userData)
+        if(!saveProdRes.data.error) {
             if (mod) {
                 toastr.success('El producto se ha modificado correctamente')
 
-                let rut = validateRut(saveUserRes.data.rut)
+                let rut = validateRut(saveProdRes.data.rut)
                 if (rut.isValid ) {
-                    saveUserRes.data.rut = rut.getNiceRut()
+                    saveProdRes.data.rut = rut.getNiceRut()
                 }
 
-                if (saveUserRes.data.scope == 'admin') saveUserRes.data.scope = "Administrador"
-                if (saveUserRes.data.scope == 'sadmin') saveUserRes.data.scope = "Super Administrador"
+                if (saveProdRes.data.scope == 'admin') saveProdRes.data.scope = "Administrador"
+                if (saveProdRes.data.scope == 'sadmin') saveProdRes.data.scope = "Super Administrador"
 
                 $('#optionModShoes').prop('disabled', true)
                 $('#optionDeleteShoe').prop('disabled', true)
@@ -331,7 +331,7 @@ async function saveUser(mod) {
                 .draw()
 
                 let modUserAdded = datatableShoes
-                .row.add(saveUserRes.data)
+                .row.add(saveProdRes.data)
                 .draw()
                 .node();
 
@@ -347,19 +347,19 @@ async function saveUser(mod) {
             } else {
                 toastr.success('El producto se ha creado correctamente')
 
-                let rut = validateRut(saveUserRes.data.rut)
+                let rut = validateRut(saveProdRes.data.rut)
                 if (rut.isValid ) {
-                    saveUserRes.data.rut = rut.getNiceRut()
+                    saveProdRes.data.rut = rut.getNiceRut()
                 }
 
-                if (saveUserRes.data.scope == 'admin') saveUserRes.data.scope = "Administrador"
-                if (saveUserRes.data.scope == 'sadmin') saveUserRes.data.scope = "Super Administrador"
+                if (saveProdRes.data.scope == 'admin') saveProdRes.data.scope = "Administrador"
+                if (saveProdRes.data.scope == 'sadmin') saveProdRes.data.scope = "Super Administrador"
 
                 $('#optionModShoes').prop('disabled', true)
                 $('#optionDeleteShoe').prop('disabled', true)
 
                 let newUserAdded = datatableShoes
-                    .row.add(saveUserRes.data)
+                    .row.add(saveProdRes.data)
                     .draw()
                     .node();
     
@@ -371,7 +371,7 @@ async function saveUser(mod) {
                 $('#shoesModal').modal('hide')
             }
         } else {
-            toastr.warning(saveUserRes.data.error)
+            toastr.warning(saveProdRes.data.error)
         }
 
     } else {
@@ -412,7 +412,7 @@ async function validateUserData(userData) {
             $('#sizePro').css('border', '1px solid #e74c3c')
         }
 
-        if(userData.color.length > 1) { // 3
+        if(userData.color.length > 1) { // 4
             validationCounter++
             $('#colorPro').css('border', '1px solid #3498db')
         } else {
@@ -420,7 +420,7 @@ async function validateUserData(userData) {
             $('#colorPro').css('border', '1px solid #e74c3c')
         }
 
-        if(userData.qty.length > 1) { // 3
+        if(userData.qty.length > 1) { // 5
             validationCounter++
             $('#qtyPro').css('border', '1px solid #3498db')
         } else {
@@ -428,7 +428,7 @@ async function validateUserData(userData) {
             $('#qtyPro').css('border', '1px solid #e74c3c')
         }
 
-        if(userData.category.length > 1) { // 3
+        if(userData.category.length > 1) { // 6
             validationCounter++
             $('#categoryPro').css('border', '1px solid #3498db')
         } else {
@@ -436,7 +436,7 @@ async function validateUserData(userData) {
             $('#categoryPro').css('border', '1px solid #e74c3c')
         }
 
-        if(userData.price.length > 1) { // 3
+        if(userData.price.length > 1) { // 7
             validationCounter++
             $('#pricePro').css('border', '1px solid #3498db')
         } else {
@@ -489,19 +489,19 @@ async function validateUserData(userData) {
         // }
 
         console.log('validation', validationCounter)
-        // if(validationCounter == 5) {
-        //     $('#newUserErrorMessage').empty()
-        //     return {ok: userData}
-        // } else {
-        //     $('#newUserErrorMessage').html(`
-        //     <div class="alert alert-dismissible alert-warning">
-        //         <button type="button" class="close" data-dismiss="alert">&times;</button>
-        //         <h4 class="alert-heading">Debe solucionar los siguientes errores</h4>
-        //         <p class="mb-0">${errorMessage}</p>
-        //     </div>
-        //     `)
+        if(validationCounter == 7) {
+            $('#newUserErrorMessage').empty()
+            return {ok: userData}
+        } else {
+            $('#newUserErrorMessage').html(`
+            <div class="alert alert-dismissible alert-warning">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                <h4 class="alert-heading">Debe solucionar los siguientes errores</h4>
+                <p class="mb-0">${errorMessage}</p>
+            </div>
+            `)
 
-        //     return {err: userData}
-        // }
+            return {err: userData}
+        }
     // })
 }
