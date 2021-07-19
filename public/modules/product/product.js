@@ -166,6 +166,11 @@ function modNewUser(modUserData) {   //NEW AND MOD USER
     $.when($('#modal_body').html(`
     <div class="row">
         <div class="col-md-4" style="margin-top:10px;">
+        SKU
+            <input id="codePro" type="text" placeholder="SKU" class="form-control border-input">
+        </div>
+        
+        <div class="col-md-4" style="margin-top:10px;">
         Nombre del producto
             <input id="namePro" type="text" placeholder="Nombre del producto" class="form-control border-input">
         </div>
