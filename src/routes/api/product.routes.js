@@ -85,7 +85,7 @@ module.exports = [
             },
             validate: {
                 payload: Joi.object().keys({
-                    code: Joi.string().required(),
+                    code: Joi.string().allow(null, ''),
                     name: Joi.string().required(),
                     brand: Joi.string().required(),
                     size: Joi.string().allow(null, ''),
