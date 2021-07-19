@@ -248,7 +248,7 @@ function modNewUser(modUserData) {   //NEW AND MOD USER
 
     if (!modUserData) {
         setTimeout(() => {
-            $('#namePro').focus()
+            $('#codePro').focus()
         }, 500)
     } else {
         // let ruto = validateRut(modUserData.rut)
@@ -304,6 +304,7 @@ function showPass() {
 async function saveProd(mod) {
 
     let userData = {
+        code: ($('#codePro').val()),
         name: ($('#namePro').val()),
         brand: $('#brandPro').val(),
         size: $('#sizePro').val(),
@@ -395,6 +396,13 @@ async function validateUserData(userData) {
 
     // return new Promise(resolve=>{
         // 5 puntos
+        if(userData.name.length > 1) { // 1
+            validationCounter++
+            $('#codePro').css('border', '1px solid #3498db')
+        } else {
+            errorMessage += `<br>Debe ingresar el nombre del producto`
+            $('#codePro').css('border', '1px solid #e74c3c')
+        }
 
         if(userData.name.length > 1) { // 1
             validationCounter++
