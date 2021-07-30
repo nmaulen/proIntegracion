@@ -903,7 +903,7 @@ async function selectProduct(rowId) {
                     if (productName !== '') {
                         loadingHandler('start')
 
-                        let res = await axios.post(`/api/product`, {
+                        let res = await axios.post(`/api/products`, {
                             name: productName
                         })
 
