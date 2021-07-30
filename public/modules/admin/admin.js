@@ -935,25 +935,25 @@ async function selectProduct(rowId) {
             try {
                 let productSelected = document.querySelector("input[name=product]:checked")
 
-                if (productSelected) {
-                    // obtener y asignar precio minimo
-                    let productMinValue = 0
+                // if (productSelected) {
+                //     // obtener y asignar precio minimo
+                //     let productMinValue = 0
 
-                    let productMinValueResponse = await axios.post('/api/product/productPrice', {
-                        code: productSelected.dataset.codproducto
-                    })
+                //     let productMinValueResponse = await axios.post('/api/product/productPrice', {
+                //         code: productSelected.dataset.codproducto
+                //     })
 
-                    console.log({productMinValueResponse})
+                //     console.log({productMinValueResponse})
 
-                    if (productMinValueResponse.data.costoUnitario) {
-                        productMinValue = productMinValueResponse.data.costoUnitario
-                    }
+                //     if (productMinValueResponse.data.costoUnitario) {
+                //         productMinValue = productMinValueResponse.data.costoUnitario
+                //     }
 
-                    return {
-                        ...productSelected.dataset,
-                        minValue: productMinValue
-                    }
-                }
+                //     return {
+                //         ...productSelected.dataset,
+                //         minValue: productMinValue
+                //     }
+                // }
 
                 throw new Error('Debe seleccionar un producto.')
             } catch (error) {
@@ -969,13 +969,17 @@ async function selectProduct(rowId) {
     })
 
     if (productSelectedData.value) {
-        internals.newCot.productsRowsData[rowId].product.code = productSelectedData.value.codproducto
-        internals.newCot.productsRowsData[rowId].product.name = productSelectedData.value.description
-        internals.newCot.productsRowsData[rowId].product.minValue = Math.round(productSelectedData.value.minValue)
+        internals.newCot.productsRowsData[rowId].product.code = productSelectedData.value.code
+        internals.newCot.productsRowsData[rowId].product.name = productSelectedData.value.name
+        internals.newCot.productsRowsData[rowId].product.size = productSelectedData.value.size
+        internals.newCot.productsRowsData[rowId].product.color = productSelectedData.value.color
+        // internals.newCot.productsRowsData[rowId].product.minValue = Math.round(productSelectedData.value.minValue)
 
-        document.querySelector(`#productCode-${rowId}`).innerHTML = productSelectedData.value.codproducto
-        document.querySelector(`#productName-${rowId}`).innerHTML = productSelectedData.value.description
-        document.querySelector(`#productMinPrice-${rowId}`).innerHTML = Math.round(productSelectedData.value.minValue)
+        document.querySelector(`#productCode-${rowId}`).innerHTML = productSelectedData.value.code
+        document.querySelector(`#productName-${rowId}`).innerHTML = productSelectedData.value.name
+        document.querySelector(`#productSize-${rowId}`).innerHTML = productSelectedData.value.size
+        document.querySelector(`#productColor-${rowId}`).innerHTML = productSelectedData.value.color
+        // document.querySelector(`#productMinPrice-${rowId}`).innerHTML = Math.round(productSelectedData.value.minValue)
     }
 }
 
@@ -983,94 +987,94 @@ function selectProductRadio(id) {
     document.querySelector(`#product-${id}`).click()
 }
 
-async function saveProduct(product) {
+// async function saveProduct(product) {
 
-    let saveMod = {
-        sku: product.sku,
-        title: $('#modTitulo').val(),
-        description: $('#modDesc').val(),
-        category: $('#selectCategory').val(),
-        subCategory: $('#selectSubcategory').val(),
-        image: $('#modImg').val(),
-        video: $('#modVid').val(),
-        pdf: $('#modPdf').val(),
-    }
-    let validateProd = await validateProductData(saveMod)
+//     let saveMod = {
+//         sku: product.sku,
+//         title: $('#modTitulo').val(),
+//         description: $('#modDesc').val(),
+//         category: $('#selectCategory').val(),
+//         subCategory: $('#selectSubcategory').val(),
+//         image: $('#modImg').val(),
+//         video: $('#modVid').val(),
+//         pdf: $('#modPdf').val(),
+//     }
+//     let validateProd = await validateProductData(saveMod)
 
-    if (validateProd.ok) {
-        let saveProd = await axios.post('/api/modProducts', saveMod)
-        if (!saveProd.data.error) {
-            toastr.success('El producto se ha modificado correctamente')
+//     if (validateProd.ok) {
+//         let saveProd = await axios.post('/api/modProducts', saveMod)
+//         if (!saveProd.data.error) {
+//             toastr.success('El producto se ha modificado correctamente')
     
-            internals.tables.products.datatable
-            .row( product )
-            .remove()
-            .draw()
+//             internals.tables.products.datatable
+//             .row( product )
+//             .remove()
+//             .draw()
     
-            product.title = saveMod.title
-            product.description = saveMod.description
-            product.category = saveMod.category
-            product.subCategory = saveMod.subCategory
+//             product.title = saveMod.title
+//             product.description = saveMod.description
+//             product.category = saveMod.category
+//             product.subCategory = saveMod.subCategory
 
-            product.info.forEach(el => {
-                if (el.name == 'Imagen') {
-                    el.data = saveMod.image
-                }
-                if (el.name == 'video') {
-                    el.data = saveMod.video
-                }
-                if (el.name == 'pdf') {
-                    el.data = saveMod.pdf
-                }
-            });
+//             product.info.forEach(el => {
+//                 if (el.name == 'Imagen') {
+//                     el.data = saveMod.image
+//                 }
+//                 if (el.name == 'video') {
+//                     el.data = saveMod.video
+//                 }
+//                 if (el.name == 'pdf') {
+//                     el.data = saveMod.pdf
+//                 }
+//             });
 
-            product.info.forEach((el, i) => {
-                if (el.name !== 'Imagen') {
-                    if (i == product.info.length-1 ) {
-                        product.info.push({
-                            name: 'Imagen',
-                            data: saveMod.image
-                        })
-                    }
-                }
-                if (el.name !== 'video') {
-                    if (i == product.info.length-1 ) {
-                        product.info.push({
-                            name: 'video',
-                            data: saveMod.video
-                        })
-                    }
-                }
-                if (el.name !== 'pdf') {
-                    if (i == product.info.length-1 ) {
-                        product.info.push({
-                            name: 'pdf',
-                            data: saveMod.pdf
-                        })
-                    }
-                }
-            });
+//             product.info.forEach((el, i) => {
+//                 if (el.name !== 'Imagen') {
+//                     if (i == product.info.length-1 ) {
+//                         product.info.push({
+//                             name: 'Imagen',
+//                             data: saveMod.image
+//                         })
+//                     }
+//                 }
+//                 if (el.name !== 'video') {
+//                     if (i == product.info.length-1 ) {
+//                         product.info.push({
+//                             name: 'video',
+//                             data: saveMod.video
+//                         })
+//                     }
+//                 }
+//                 if (el.name !== 'pdf') {
+//                     if (i == product.info.length-1 ) {
+//                         product.info.push({
+//                             name: 'pdf',
+//                             data: saveMod.pdf
+//                         })
+//                     }
+//                 }
+//             });
     
-            let modProdAdded = internals.tables.products.datatable
-            .row.add(product)
-            .draw()
-            .node();
+//             let modProdAdded = internals.tables.products.datatable
+//             .row.add(product)
+//             .draw()
+//             .node();
     
-            $(modProdAdded).css( 'color', '#1abc9c' )
-            setTimeout(() => {
-                $(modProdAdded).css( 'color', '#484848' )
-            }, 5000);
+//             $(modProdAdded).css( 'color', '#1abc9c' )
+//             setTimeout(() => {
+//                 $(modProdAdded).css( 'color', '#484848' )
+//             }, 5000);
     
-            $('#modal').modal('hide')
+//             $('#modal').modal('hide')
     
-        }else {
-            toastr.warning(saveProd.data.error)
-        }
-    } else {
-        toastr.warning('Ha ocurrido un error al verificar los datos del producto')
-    }
+//         }else {
+//             toastr.warning(saveProd.data.error)
+//         }
+//     } else {
+//         toastr.warning('Ha ocurrido un error al verificar los datos del producto')
+//     }
     
-}
+// }
 
 async function validateProductData(prodData) {
     // console.log(prodData)
