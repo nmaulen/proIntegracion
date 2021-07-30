@@ -475,112 +475,14 @@ const handleModal = (originalData) => {
 
                     <div class="col-md-6 form-group">
                         <fieldset disabled="">
-                            <label class="control-label" for="creationDate">Fecha creación</label>
-                            <input class="form-control" id="creationDate" type="text" value="${moment(internals.newSale.creationDate).format('DD/MM/YYYY')}" disabled="">
+                            <label class="control-label" for="fechaEmision">Fecha creación</label>
+                            <input class="form-control" id="fechaEmision" type="text" value="${moment(internals.newSale.fechaEmision).format('DD/MM/YYYY')}" disabled="">
                         </fieldset>
                     </div>
 
-                    <div class="col-md-6 form-group">
-                        <fieldset>
-                            <label class="control-label" for="deliveryDate">Fecha entrega</label>
-                                <div class="input-group">
-                                    <input id="deliveryDate" type="date" class="form-control" value="${(internals.newSale.deliveryDate) ? internals.newSale.deliveryDate : ''}">
-                                </div>
-                        </fieldset>
-                    </div>
-
-                    <div class="col-md-6 form-group">
-                        <fieldset>
-                            <label class="control-label" for="expirationDate">Fecha expiración</label>
-                                <div class="input-group">
-                                <input id="expirationDate" type="date" class="form-control" value="${(internals.newSale.expirationDate) ? internals.newSale.expirationDate : ''}">
-                                </div>
-                        </fieldset>
-                    </div>
-
-                    <div class="col-md-6 form-group">
-                        <fieldset disabled="">
-                            <label class="control-label" for="state">Estado</label>
-                            <input class="form-control" id="state" type="text" placeholder="Pendiente" disabled="" value="${internals.newSale.status}">
-                        </fieldset>
-                    </div>
-
-                <!--    <div class="col-md-12 form-group">
-                        <fieldset>
-                            <label class="control-label" for="store">Bodegas</label>
-                            <select id="store" class="form-control"></select>
-                        </fieldset>
-                    </div>
-                -->
                 </div>
             </div>
             <br>
-            <div class="col-md-6 form-group">
-                <div class="row">
-
-                    <div class="col-md-12 inputNone">
-                        <fieldset>
-                            <input class="inputCodClient form-control" id="inputCodClient" type="text" placeholder="Codigo cliente" disabled="">
-                        </fieldset>
-                    </div>
-
-                    <div class="col-md-4">
-                        <label class="control-label" for="inputNameClient">Nombre cliente</label>
-                    </div>
-
-                    ${
-                        (!originalQuoteData) ? `
-                        <div class="col-md-4 form-group">
-                            <fieldset>
-                                <button onclick="createClient()" id="newClient" type="button" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> Nuevo cliente</button>
-                            </fieldset>
-                        </div>
-
-                        <div class="col-md-4" clientButton>
-                            <fieldset>
-                                <button onclick="selectClient()" type="button" class="btn btn-primary btn-sm" id="searchClient"><i class="fas fa-search"></i> Buscar cliente</button>
-                            </fieldset>
-                        </div>
-                        `
-                        :
-                        ''
-                    }
-
-                    <div class="col-md-12 form-group">
-                        <fieldset>
-                            <input class="form-control" id="inputNameClient" type="text" placeholder="seleccione un cliente" disabled="" value="${internals.newSale.clientData.name.toUpperCase()}">
-                        </fieldset>
-                    </div>
-
-                    <div class="col-md-12 form-group">
-                        <fieldset>
-                            <label class="control-label" for="inputRutClient">Rut cliente</label>
-                            <input class="form-control" id="inputRutClient" type="text" placeholder="seleccione un cliente" disabled="" value="${internals.newSale.clientData.rut}">
-                        </fieldset>
-                    </div>
-
-                    <div class="col-md-12 form-group">
-                        <fieldset>
-                            <label class="control-label" for="inputAddressClient">Dirección cliente</label>
-                            <input class="form-control" id="inputAddressClient" type="text" placeholder="seleccione un cliente" disabled="" value="${internals.newSale.clientData.address}">
-                        </fieldset>
-                    </div>
-
-                    <div class="col-md-12 form-group">
-                        <fieldset>
-                            <label for="inputEmail">Email cliente</label>
-                            <input type="email" class="form-control" id="inputEmailClient" aria-describedby="emailHelp" placeholder="seleccione un cliente" disabled="" value="${(internals.newSale.clientData.email) ? internals.newSale.clientData.email.toUpperCase() : 'SIN DATO'}">
-                        </fieldset>
-                    </div>
-
-                    <div class="col-md-12 form-group">
-                        <fieldset>
-                            <label for="inputEmailSendClient">Email de envío de cotización</label>
-                            <input type="email" class="form-control" id="inputEmailSendClient" aria-describedby="email para guardar y enviar" placeholder="email para guardar y enviar" value="">
-                        </fieldset>
-                    </div>
-                </div>
-            </div>
 
             <div style="width:100%;">
                 <h3 class="text-center">Productos</h3>
