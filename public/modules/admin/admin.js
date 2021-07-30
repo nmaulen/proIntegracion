@@ -460,28 +460,25 @@ const handleModal = (originalData) => {
             <div class="col-md-6 form-group">
                 <div class="row">
 
-                    <div class="col-md-12 inputNone">
-                        <fieldset>
-                            <input class="inputCodSeller form-control" id="inputCodSeller" type="text" placeholder="Codigo vendedor" disabled="" value="${internals.newSale.sellerCod}">
-                        </fieldset>
-                    </div>
-
                     <div class="col-md-12 form-group">
-                        <fieldset style="margin-top: 10px;">
+                        <fieldset">
                             <label class="control-label" for="seller">Vendedor</label>
                             <input class="form-control" id="seller" type="text" value="${internals.newSale.name} " disabled="">
                         </fieldset>
                     </div>
 
-                    <div class="col-md-6 form-group">
+                </div>
+            </div>
+                <div class="col-md-6 form-group">
+                <div class="row">
+                <div class="col-md-12 form-group">
                         <fieldset disabled="">
                             <label class="control-label" for="fechaEmision">Fecha creación</label>
                             <input class="form-control" id="fechaEmision" type="text" value="${moment(internals.newSale.fechaEmision).format('DD/MM/YYYY')}" disabled="">
                         </fieldset>
                     </div>
-
                 </div>
-            </div>
+                </div>
             <br>
 
             <div style="width:100%;">
@@ -501,8 +498,8 @@ const handleModal = (originalData) => {
                             <th>Nombre Producto</th>
                             <th>Talla</th>
                             <th>Color</th>
-                            <th>Cantidad</th>
                             <th>Precio unitario</th>
+                            <th>Cantidad</th>
                             <th>Sub total</th>
                             <th></th>
                         </tr>
@@ -612,14 +609,17 @@ function drawTableBody() {
                 <td id="productSize-${i}">
                     ${(el.product.size === '') ? '-SELECCIONE PRODUCTO-' : el.product.size}
                 </td>
-                <td id="productName-${i}">
+                <td id="productColor-${i}">
                     ${(el.product.color === '') ? '-SELECCIONE PRODUCTO-' : el.product.color}
+                </td>
+                <td id="productBrand-${i}">
+                    ${(el.product.brand === '') ? '-SELECCIONE PRODUCTO-' : el.product.brand}
                 </td>
                 <td>
                     <input class="productInputQty rowInput" data-row="${i}" id="productQty-${i}" type="text" value="${el.qty}">
                 </td>
-                <td>
-                    <input class="productInputUnitPrice rowInput" data-row="${i}" id="productPrice-${i}" type="text" value="${el.price}">
+                <td id="productBrand-${i}">
+                    ${(el.product.price === '') ? '-SELECCIONE PRODUCTO-' : el.product.price}
                 </td>
                 <td style="width: 150px !important;"><span>$ </span><span id="subTotal-${i}" >${dot_separators(el.rowSubTotal)}</span></td>
                 <td>
@@ -877,7 +877,10 @@ async function selectProduct(rowId) {
                             <td></td>
                             <td>#</td>
                             <td>CODIGO</td>
-                            <td>DETALLE</td>
+                            <td>NOMBRE</td>
+                            <td>TALLA</td>
+                            <td>COLOR</td>
+                            <td>MARCA</td>
                         </tr>
                     </thead>
                     <tbody id="productsTable"></tbody>
@@ -913,7 +916,7 @@ async function selectProduct(rowId) {
                                     <td>${el.name}</td>
                                     <td>${el.size}</td>
                                     <td>${el.color}</td>
-
+                                    <td>${el.brand}</td>
                                 </tr>
                             `
 
@@ -973,12 +976,14 @@ async function selectProduct(rowId) {
         internals.newCot.productsRowsData[rowId].product.name = productSelectedData.value.name
         internals.newCot.productsRowsData[rowId].product.size = productSelectedData.value.size
         internals.newCot.productsRowsData[rowId].product.color = productSelectedData.value.color
+        internals.newCot.productsRowsData[rowId].product.brand = productSelectedData.value.brand
         // internals.newCot.productsRowsData[rowId].product.minValue = Math.round(productSelectedData.value.minValue)
 
         document.querySelector(`#productCode-${rowId}`).innerHTML = productSelectedData.value.code
         document.querySelector(`#productName-${rowId}`).innerHTML = productSelectedData.value.name
         document.querySelector(`#productSize-${rowId}`).innerHTML = productSelectedData.value.size
         document.querySelector(`#productColor-${rowId}`).innerHTML = productSelectedData.value.color
+        document.querySelector(`#productBrand-${rowId}`).innerHTML = productSelectedData.value.brand
         // document.querySelector(`#productMinPrice-${rowId}`).innerHTML = Math.round(productSelectedData.value.minValue)
     }
 }
