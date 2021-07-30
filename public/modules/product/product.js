@@ -1,7 +1,7 @@
 let datatableShoes
 let datatableDisabledUsers
-let userRowSelected
-let userRowSelectedData
+let proRowSelected
+let proRowSelectedData
 
 $(document).ready(function(){
     chargeUsersTable()
@@ -31,7 +31,7 @@ function chargeUsersTable() {
             { data: 'price'}
         ],
         initComplete: function (settings, json) {
-            getUsersEnabled()
+            getProEnabled()
         },
         rowCallback: function( row, data ) {
             // if (data.scope == "sadmin") $(row).find('td:eq(5)').html("Super Administrador")
@@ -50,8 +50,8 @@ function chargeUsersTable() {
             $(this).addClass('selected');
             $('#optionModShoes').prop('disabled', false)
             $('#optionDeleteShoe').prop('disabled', false)
-            userRowSelectedData = cleanData(datatableShoes.row($(this)).data())
-            userRowSelected = datatableShoes.row($(this))
+            proRowSelectedData = cleanData(datatableShoes.row($(this)).data())
+            proRowSelected = datatableShoes.row($(this))
         }
     })
 }
@@ -62,7 +62,7 @@ function chargeUsersTable() {
 //     return data
 // }
 
-async function getUsersEnabled() {
+async function getProEnabled() {
     let res = await axios.get('api/products')
 
     // let cate = await axios.get('api/categories')
@@ -92,7 +92,7 @@ $('#optionCreateShoe').on('click', function() { // CREAR CLIENTE
     $('#shoesModal').modal('show');
     $('#modal_title').html(`Nuevo calzado`)
 
-    modNewUser()
+    modNewPro()
 
     $('#saveProd').on('click', async function(){
         saveProd()
@@ -101,7 +101,7 @@ $('#optionCreateShoe').on('click', function() { // CREAR CLIENTE
 });
 
 $('#optionDeleteShoe').on('click', function() {
-    deleteUser(userRowSelectedData._id, userRowSelectedData.name, userRowSelectedData.scope)
+    deleteUser(proRowSelectedData._id, proRowSelectedData.name, proRowSelectedData.scope)
 
 })
 
@@ -124,14 +124,14 @@ async function deleteUser(_id, name, rol) {
         });
     
         if (result.value) {
-            let delUser = await axios.delete(`api/products/${_id}`);
+            let delPro = await axios.delete(`api/products/${_id}`);
     
-            if (delUser.data.ok) {
+            if (delPro.data.ok) {
                 $('#optionModShoes').prop('disabled', true)
                 $('#optionDeleteShoe').prop('disabled', true)
-                toastr.success(`producto "${name}" eliminado correctamente`);
+                toastr.success(`Producto "${name}" eliminado correctamente`);
                 datatableShoes
-                .row( userRowSelected )
+                .row( proRowSelected )
                 .remove()
                 .draw()
     
@@ -149,8 +149,8 @@ async function deleteUser(_id, name, rol) {
 
 $('#optionModShoes').on('click', function() {
     $('#shoesModal').modal('show');
-    $('#modal_title').html(`Modificar producto: ${capitalizeAll(userRowSelectedData.name)} ${capitalizeAll(userRowSelectedData.lastname)}`)
-    modNewUser(userRowSelectedData)
+    $('#modal_title').html(`Modificar producto: ${capitalizeAll(proRowSelectedData.name)} ${capitalizeAll(proRowSelectedData.lastname)}`)
+    modNewPro(proRowSelectedData)
 
     let mod = 'yes'
     $('#saveProd').on('click', async function(){
@@ -162,7 +162,7 @@ const rutFunc = (rut) => {
     return $.formatRut(rut)
 }
 
-function modNewUser(modUserData) {   //NEW AND MOD USER
+function modNewPro(modUserData) {   //NEW AND MOD USER
     $.when($('#modal_body').html(`
     <div class="row">
         <div class="col-md-4" style="margin-top:10px;">
@@ -335,7 +335,7 @@ async function saveProd(mod) {
                 $('#optionDeleteShoe').prop('disabled', true)
 
                 datatableShoes
-                .row( userRowSelected )
+                .row( proRowSelected )
                 .remove()
                 .draw()
 
