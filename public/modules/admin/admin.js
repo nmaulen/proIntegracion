@@ -15,6 +15,11 @@ const internals = {
             datatable: null,
             rowSelected: null
         }
+    },
+    selectedSaleProducts: [],
+    newSale: {
+        fechaEmision: moment().format('YYYY-MM-DD'),
+        productsRowsData: [],
     }
 }
 let categoriesList
@@ -398,65 +403,226 @@ async function loadDataToProductsTable(filter) {
     loadingHandler('stop')
 }
 
-const handleModal = () => {
+const handleModal = (originalData) => {
     const modalSelector = {
         title: document.querySelector('#modal_title'),
         body: document.querySelector('#modal_body'),
         footer: document.querySelector('#modal_footer'),
     }
 
-    modalSelector.title.innerHTML = `
-		Nueva venta de productos
-	`
+    internals.newSale.number = undefined
+    internals.newSale.productsRowsData = []
+
+    let today = moment().format('YYYY-MM-DD')
+    internals.newSale.fechaEmision = moment(today).format('YYYY-MM-DD')
+
+    internals.newSale.total = 0
+    internals.newSale.notasDeVenta = []
+
+    if (originalData) {
+        await getAuxiliarCompleto(originalQuoteData.codAuxiliar)
+
+        internals.newSale.title = `<i class="fas fa-file-invoice"></i> Boleta <span class="badge badge-primary">N° ${originalData.code}</span>`
+        internals.newSale.code = originalData.code
+        internals.newSale.rut = originalData.rut
+        internals.newSale.name = originalData.name
+
+        internals.newSale.fechaEmision = moment(originalData.fechaEmision).format('YYYY-MM-DD') // fecha creacion o fecha emision?
+
+        internals.newSale.productsRowsData = originalData.detalle.reduce((acc,el,i) => {
+            acc.push({
+                price: el.precioUnitario,
+                qty: el.cantidad,
+                rowSubTotal: el.total,
+                product: {
+                    code: el.codProducto,
+                    name: el.nombreProducto,
+                    brand: el.brand,
+                    size: el.size
+                }
+            })
+
+            return acc
+        }, [])
+
+        // let resBuscarNotasDeVenta = await axios.get(`/api/NvsByCotCod/${internals.newSale.number}`)
+
+        // internals.newSale.notasDeVenta = resBuscarNotasDeVenta.data
+    }
+    
+    internals.selectedSaleProducts = internals.newSale.productsRowsData
+
+    modalSelector.title.innerHTML = internals.newSale.title
+
     modalSelector.body.innerHTML = `
-    <br>
-    <br>
-    <div class="row">
-    <div class="col-md-4" style="margin-top:10px;">
-        Codigo
-        <select id="categoryPro" class="custom-select">
-        <option value="001">001</option>
-        <option value="002">002</option>
-        <option value="003">003</option>
-        <option value="004">004</option>
-        </select>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-6 form-group">
+                <div class="row">
+
+                    <div class="col-md-12 inputNone">
+                        <fieldset>
+                            <input class="inputCodSeller form-control" id="inputCodSeller" type="text" placeholder="Codigo vendedor" disabled="" value="${internals.newSale.sellerCod}">
+                        </fieldset>
+                    </div>
+
+                    <div class="col-md-12 form-group">
+                        <fieldset style="margin-top: 10px;">
+                            <label class="control-label" for="seller">Vendedor</label>
+                            <input class="form-control" id="seller" type="text" value="${internals.newSale.sellerName.toUpperCase()}" disabled="">
+                        </fieldset>
+                    </div>
+
+                    <div class="col-md-6 form-group">
+                        <fieldset disabled="">
+                            <label class="control-label" for="creationDate">Fecha creación</label>
+                            <input class="form-control" id="creationDate" type="text" value="${moment(internals.newSale.creationDate).format('DD/MM/YYYY')}" disabled="">
+                        </fieldset>
+                    </div>
+
+                    <div class="col-md-6 form-group">
+                        <fieldset>
+                            <label class="control-label" for="deliveryDate">Fecha entrega</label>
+                                <div class="input-group">
+                                    <input id="deliveryDate" type="date" class="form-control" value="${(internals.newSale.deliveryDate) ? internals.newSale.deliveryDate : ''}">
+                                </div>
+                        </fieldset>
+                    </div>
+
+                    <div class="col-md-6 form-group">
+                        <fieldset>
+                            <label class="control-label" for="expirationDate">Fecha expiración</label>
+                                <div class="input-group">
+                                <input id="expirationDate" type="date" class="form-control" value="${(internals.newSale.expirationDate) ? internals.newSale.expirationDate : ''}">
+                                </div>
+                        </fieldset>
+                    </div>
+
+                    <div class="col-md-6 form-group">
+                        <fieldset disabled="">
+                            <label class="control-label" for="state">Estado</label>
+                            <input class="form-control" id="state" type="text" placeholder="Pendiente" disabled="" value="${internals.newSale.status}">
+                        </fieldset>
+                    </div>
+
+                <!--    <div class="col-md-12 form-group">
+                        <fieldset>
+                            <label class="control-label" for="store">Bodegas</label>
+                            <select id="store" class="form-control"></select>
+                        </fieldset>
+                    </div>
+                -->
+                </div>
+            </div>
+            <br>
+            <div class="col-md-6 form-group">
+                <div class="row">
+
+                    <div class="col-md-12 inputNone">
+                        <fieldset>
+                            <input class="inputCodClient form-control" id="inputCodClient" type="text" placeholder="Codigo cliente" disabled="">
+                        </fieldset>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="control-label" for="inputNameClient">Nombre cliente</label>
+                    </div>
+
+                    ${
+                        (!originalQuoteData) ? `
+                        <div class="col-md-4 form-group">
+                            <fieldset>
+                                <button onclick="createClient()" id="newClient" type="button" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> Nuevo cliente</button>
+                            </fieldset>
+                        </div>
+
+                        <div class="col-md-4" clientButton>
+                            <fieldset>
+                                <button onclick="selectClient()" type="button" class="btn btn-primary btn-sm" id="searchClient"><i class="fas fa-search"></i> Buscar cliente</button>
+                            </fieldset>
+                        </div>
+                        `
+                        :
+                        ''
+                    }
+
+                    <div class="col-md-12 form-group">
+                        <fieldset>
+                            <input class="form-control" id="inputNameClient" type="text" placeholder="seleccione un cliente" disabled="" value="${internals.newSale.clientData.name.toUpperCase()}">
+                        </fieldset>
+                    </div>
+
+                    <div class="col-md-12 form-group">
+                        <fieldset>
+                            <label class="control-label" for="inputRutClient">Rut cliente</label>
+                            <input class="form-control" id="inputRutClient" type="text" placeholder="seleccione un cliente" disabled="" value="${internals.newSale.clientData.rut}">
+                        </fieldset>
+                    </div>
+
+                    <div class="col-md-12 form-group">
+                        <fieldset>
+                            <label class="control-label" for="inputAddressClient">Dirección cliente</label>
+                            <input class="form-control" id="inputAddressClient" type="text" placeholder="seleccione un cliente" disabled="" value="${internals.newSale.clientData.address}">
+                        </fieldset>
+                    </div>
+
+                    <div class="col-md-12 form-group">
+                        <fieldset>
+                            <label for="inputEmail">Email cliente</label>
+                            <input type="email" class="form-control" id="inputEmailClient" aria-describedby="emailHelp" placeholder="seleccione un cliente" disabled="" value="${(internals.newSale.clientData.email) ? internals.newSale.clientData.email.toUpperCase() : 'SIN DATO'}">
+                        </fieldset>
+                    </div>
+
+                    <div class="col-md-12 form-group">
+                        <fieldset>
+                            <label for="inputEmailSendClient">Email de envío de cotización</label>
+                            <input type="email" class="form-control" id="inputEmailSendClient" aria-describedby="email para guardar y enviar" placeholder="email para guardar y enviar" value="">
+                        </fieldset>
+                    </div>
+                </div>
+            </div>
+
+            <div style="width:100%;">
+                <h3 class="text-center">Productos</h3>
+
+                <button id="newProductRow" style="display: block; margin-bottom: 10px; margin-left: 20px;" type="button" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> Añadir producto</button>
+            </div>
+
+            <div class="col-md-12 col-xs-12 table-responsive">
+
+                <table id="tableSaleProducts" class="display table table-condensed" cellspacing="0" width="100%">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th></th>
+                            <th>Código</th>
+                            <th>Nombre Producto</th>
+                            <th>Talla</th>
+                            <th>Color</th>
+                            <th>Cantidad</th>
+                            <th>Precio unitario</th>
+                            <th>Sub total</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableSaleProductsBody"></tbody>
+                </table>
+            </div>
+
+            <div class="col-md-6"></div>
+            <div class="col-md-6">
+                <table width="100%">
+                    <tbody>
+                        <tr>
+                            <td><b><h3>Total</h3></b></td>
+                            <td id="saleTotal">$ 0</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
-    <div class="col-md-4" style="margin-top:10px;">
-    Nombre del producto
-        <input id="namePro" type="text" placeholder="Nombre del producto" class="form-control border-input " disabled>
-    </div>
 
-    <div class="col-md-4" style="margin-top:10px;">
-    Marca del producto
-        <input id="brandPro" type="text" placeholder="marca producto " class="form-control border-input " disabled>
     </div>
-
-    <div class="col-md-4" style="margin-top:10px;">
-    Talla
-        <input id="sizePro" type="text" placeholder="Talla" class="form-control border-input " disabled>
-    </div>
-
-    <div class="col-md-4" style="margin-top:10px;">
-    Color
-        <input id="colorPro" type="text" placeholder="Color" class="form-control border-input " disabled>
-    </div>
-
-    <div class="col-md-4" style="margin-top:10px;">
-    Cantidad
-        <input id="qtyPro" type="text" placeholder="Ej:14" class="form-control border-input" disabled>
-    </div>
-
-    <div class="col-md-4" style="margin-top:10px;">
-    Categoria
-        <input id="categoryPro" type="text" placeholder="Categoria" class="form-control border-input" disabled>
-    </div>
-
-    <div class="col-md-4" style="margin-top:10px;">
-    Precio
-        <input id="pricePro" type="text" placeholder="Precio" class="form-control border-input" disabled>
-    </div>
-
-    <br>
     `
     modalSelector.footer.innerHTML = `
     <button class="btn btn-dark" data-dismiss="modal">
@@ -492,6 +658,132 @@ const handleModal = () => {
     });
 
 }
+
+function addRowToTable() {
+    if (internals.newSale.productsRowsData.length < 24) {
+        internals.newSale.productsRowsData.push({
+            product: {
+                code: '',
+                name: ''
+            },
+            qty: 0,
+            price: 0,
+            minPrice: 0,
+            rowSubTotal: 0
+        })
+    } else {
+        toastr.warning('El maximo de filas por cotizacion es de 24.')
+    }
+
+}
+
+function deleteRow(rowId) {
+    internals.newSale.productsRowsData.splice(rowId, 1)
+    drawTableBody()
+}
+
+function drawTableBody() {
+    // console.log(internals.newSale.productsRowsData, 'eee')
+
+    querySelector('#tableCotProductsBody').innerHTML = internals.newSale.productsRowsData.reduce((acc, el, i) => {
+        acc += `
+            <tr id="row-${i}">
+                <td>
+                    <b>${i + 1}</b>
+                </td>
+                <td>
+                    <button onclick="selectProduct(${i})" type="button" class="btn btn-primary btn-sm searchProduct"><i class="fas fa-search"></i></button>
+                </td>
+                <td id="productCode-${i}">
+                    ${(el.product.code === '') ? '-SELECCIONE PRODUCTO-' : el.product.code}
+                </td>
+                <td id="productName-${i}">
+                    ${(el.product.name === '') ? '-SELECCIONE PRODUCTO-' : el.product.name}
+                </td>
+                <td id="productSize-${i}">
+                    ${(el.product.size === '') ? '-SELECCIONE PRODUCTO-' : el.product.size}
+                </td>
+                <td id="productName-${i}">
+                    ${(el.product.color === '') ? '-SELECCIONE PRODUCTO-' : el.product.color}
+                </td>
+                <td>
+                    <input class="productInputQty rowInput" data-row="${i}" id="productQty-${i}" type="text" value="${el.qty}">
+                </td>
+                <td>
+                    <input class="productInputUnitPrice rowInput" data-row="${i}" id="productPrice-${i}" type="text" value="${el.price}">
+                </td>
+                <td style="width: 150px !important;"><span>$ </span><span id="subTotal-${i}" >${dot_separators(el.rowSubTotal)}</span></td>
+                <td>
+                    <button onclick="deleteRow(${i})" type="button" class="btn btn-danger btn-sm deleteProduct"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>
+        `
+        return acc
+    }, '')
+
+    document.querySelectorAll('.productInputQty').forEach(el => {
+        new Cleave(el, {
+            blocks: [6],
+            numeral: true,
+            numericOnly: true,
+            numeralPositiveOnly: true,
+            numeralThousandsGroupStyle: 'thousand',
+            numeralDecimalMark: ",",
+            delimiter: "."
+        })
+    })
+
+    document.querySelectorAll('.productInputUnitPrice').forEach(el => {
+        new Cleave(el, {
+            prefix: '$ ',
+            numeral: true,
+            numeralThousandsGroupStyle: 'thousand',
+            numeralDecimalScale: 0,
+            numeralPositiveOnly: true,
+            numeralDecimalMark: ",",
+            delimiter: "."
+        })
+    })
+
+    updateFinalsAmounts()
+}
+
+async function updateFinalsAmounts(rt = false) {
+
+    let subtotals = internals.newSale.productsRowsData.reduce((acc, el, i) => {
+        // el.rowSubTotal = parseInt(el.rowSubTotal)
+        acc += el.rowSubTotal
+
+        return acc
+    }, 0)
+
+    // console.log('aaa',{
+    //     subtotals,
+    //     iva: Math.round(subtotals * 0.19),
+    //     total: subtotals + Math.round(subtotals* 0.19)
+    // })
+    
+    // let taxValue = Math.round(subtotals * 0.19)
+
+    let amounts = {
+        subtotals,
+        // tax: taxValue,
+        total: subtotals
+    }
+
+    if (rt) {
+        return amounts
+    }
+
+    internals.newSale.subtotal = amounts.subtotals
+    // internals.newSale.tax = amounts.tax
+    internals.newSale.total = amounts.total
+
+    // document.getElementById('quoteSubtotal').innerHTML = `$ ${dot_separators(amounts.subtotals)}`
+    // document.getElementById('quoteTax').innerHTML = `$ ${dot_separators(amounts.tax)}`
+    document.getElementById('quoteTotal').innerHTML = `$ ${dot_separators(amounts.total)}`
+}
+
 
 async function selectSave(arrayBuffer) {
         const  swalWithBootstrapButtons = Swal.mixin({

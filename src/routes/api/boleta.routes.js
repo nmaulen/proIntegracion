@@ -63,16 +63,17 @@ module.exports = [
                     fechaEmision: Joi.string().required(),
                     total: Joi.number().integer().required(),
                     detalle: Joi.array().items(Joi.object().keys({
-                            _id: Joi.string().required(),
-                            linea: Joi.number().integer().required(),
-                            codProducto: Joi.string().required(),
-                            nombreProducto: Joi.string().required(),
-                            brand: Joi.string().required(),
-                            size: Joi.number().integer().required(),
-                            color: Joi.string().required(),
-                            qty: Joi.number().integer().required(),
-                            precio: Joi.number().integer().required()
-                        }))
+                        _id: Joi.string().required(),
+                        linea: Joi.number().integer().required(),
+                        codProducto: Joi.string().required(),
+                        nombreProducto: Joi.string().required(),
+                        brand: Joi.string().required(),
+                        size: Joi.number().integer().required(),
+                        color: Joi.string().required(),
+                        qty: Joi.number().integer().required(),
+                        total: Joi.number().integer().required(),
+                        precio: Joi.number().integer().required()
+                    }))
                 })
             }
         }

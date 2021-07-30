@@ -17,6 +17,7 @@ const boletaSchema = new Schema({
             size: { type: Number, required: true },
             color: { type: String, required: true},
             qty: { type: Number, required: true },
+            total: { type: Number, required: true },
             precio: { type: Number, required: true }
         }
     ]
