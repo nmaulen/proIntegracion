@@ -420,7 +420,7 @@ const handleModal = (originalData) => {
     internals.newSale.notasDeVenta = []
 
     if (originalData) {
-        await getAuxiliarCompleto(originalQuoteData.codAuxiliar)
+        // await getAuxiliarCompleto(originalQuoteData.codAuxiliar)
 
         internals.newSale.title = `<i class="fas fa-file-invoice"></i> Boleta <span class="badge badge-primary">N° ${originalData.code}</span>`
         internals.newSale.code = originalData.code
@@ -469,7 +469,7 @@ const handleModal = (originalData) => {
                     <div class="col-md-12 form-group">
                         <fieldset style="margin-top: 10px;">
                             <label class="control-label" for="seller">Vendedor</label>
-                            <input class="form-control" id="seller" type="text" value="${internals.newSale.sellerName.toUpperCase()}" disabled="">
+                            <input class="form-control" id="seller" type="text" value="${internals.newSale.name} " disabled="">
                         </fieldset>
                     </div>
 
@@ -537,27 +537,34 @@ const handleModal = (originalData) => {
 	`
 
     $('#modal').modal('show')
-    let arrayBuffer
-    const fileSelector = document.getElementById('excelFile');
-    fileSelector.addEventListener('change', (event) => {
+    // let arrayBuffer
+    // const fileSelector = document.getElementById('excelFile');
+    // fileSelector.addEventListener('change', (event) => {
 
-        const file = event.target.files[0];
-        var reader = new FileReader();
-        reader.readAsArrayBuffer(file);
-        reader.onloadend = async function (event) {
-            arrayBuffer = reader.result;
-        };
+    //     const file = event.target.files[0];
+    //     var reader = new FileReader();
+    //     reader.readAsArrayBuffer(file);
+    //     reader.onloadend = async function (event) {
+    //         arrayBuffer = reader.result;
+    //     };
 
-    });
+    // });
 
-    $('#saveExcel').on('click', async function () {
-        if (!arrayBuffer || arrayBuffer == '') {
-            toastr.warning('Debe seleccionar un excel')
-        } else {
+    // $('#saveExcel').on('click', async function () {
+    //     if (!arrayBuffer || arrayBuffer == '') {
+    //         toastr.warning('Debe seleccionar un excel')
+    //     } else {
 
-            await selectSave(arrayBuffer)
-        }
-    });
+    //         await selectSave(arrayBuffer)
+    //     }
+    // });
+    if (!originalData) {
+        addRowToTable()
+    }
+    querySelector('#newProductRow').addEventListener('click', () => {
+        addRowToTable()
+        drawTableBody()
+    })
 
 }
 
@@ -587,7 +594,7 @@ function deleteRow(rowId) {
 function drawTableBody() {
     // console.log(internals.newSale.productsRowsData, 'eee')
 
-    querySelector('#tableCotProductsBody').innerHTML = internals.newSale.productsRowsData.reduce((acc, el, i) => {
+    querySelector('#tableSaleProductsBody').innerHTML = internals.newSale.productsRowsData.reduce((acc, el, i) => {
         acc += `
             <tr id="row-${i}">
                 <td>
@@ -723,128 +730,257 @@ async function selectSave(arrayBuffer) {
         })
 }
 
-async function saveExcel(arrayBuffer) {
+// async function saveExcel(arrayBuffer) {
 
-    var workbook = new ExcelJS.Workbook();
-    workbook.xlsx.load(arrayBuffer).then(async function (workbook) {
-        // console.log("rows", workbook._worksheets[1]._rows[1]._cells[13]._value.model.value)
-        let arraydata = []
-        // if cells > 12 = atributos
+//     var workbook = new ExcelJS.Workbook();
+//     workbook.xlsx.load(arrayBuffer).then(async function (workbook) {
+//         // console.log("rows", workbook._worksheets[1]._rows[1]._cells[13]._value.model.value)
+//         let arraydata = []
+//         // if cells > 12 = atributos
 
-        let data = workbook._worksheets[1]._rows
+//         let data = workbook._worksheets[1]._rows
 
-        let final = []
-        let keyobj = []
-        let keyobjRaw = []
-        data.forEach((ed, i) => {
-            if (i == 1) {
-                ed._cells.forEach((el) => {
-                    keyobj.push(
-                        (removeAccents2(removeSpecials2((el._value.model.value).trim()))).toLowerCase()
-                    )
-                    keyobjRaw.push(
-                        el._value.model.value
-                    )
-                })
-            }
-        });
+//         let final = []
+//         let keyobj = []
+//         let keyobjRaw = []
+//         data.forEach((ed, i) => {
+//             if (i == 1) {
+//                 ed._cells.forEach((el) => {
+//                     keyobj.push(
+//                         (removeAccents2(removeSpecials2((el._value.model.value).trim()))).toLowerCase()
+//                     )
+//                     keyobjRaw.push(
+//                         el._value.model.value
+//                     )
+//                 })
+//             }
+//         });
 
-        data.forEach((ed, i) => {
-            if (i !== 0 && i !== 1) {
-                let rowProd = {}
-                ed._cells.forEach((cell, o) => {
-                    if (cell._value.model.value !== '') {
-                        if (typeof cell._value.model.value == 'undefined' && cell._value.model.text !== '') {
-                            rowProd[keyobj[o]] = cell._value.model.text
-                        } else {
-                            rowProd[keyobj[o]] = cell._value.model.value
-                        }
-                    }
-                    if (o === ed._cells.length - 1) {
-                        final.push(rowProd)
-                    }
-                })
-            }
-        })
+//         data.forEach((ed, i) => {
+//             if (i !== 0 && i !== 1) {
+//                 let rowProd = {}
+//                 ed._cells.forEach((cell, o) => {
+//                     if (cell._value.model.value !== '') {
+//                         if (typeof cell._value.model.value == 'undefined' && cell._value.model.text !== '') {
+//                             rowProd[keyobj[o]] = cell._value.model.text
+//                         } else {
+//                             rowProd[keyobj[o]] = cell._value.model.value
+//                         }
+//                     }
+//                     if (o === ed._cells.length - 1) {
+//                         final.push(rowProd)
+//                     }
+//                 })
+//             }
+//         })
 
-        final.forEach((el, i) => {
-            let a = {}
-            //let xEl = workbook._worksheets[1]._rows[1]._cells[i]._value.model.value
-            if (el.infostatus == 'COMPLETADO' && el.sku && el.productid && el.descripcion && el.titulo && 
-            el.categoriapadrecategorianodefinidaensap && 
-            el.categoriacategoriapadresap && el.subcategoriacategoriasap) {
-                let copyEl = el
-                a.sku = el.sku
-                a.productId = el.productid
-                a.title = el.titulo
-                a.star = 'no'
-                a.status = 'enabled'
-                a.category = el.categoriapadrecategorianodefinidaensap
-                a.subCategory = el.categoriacategoriapadresap
-                a.subCategory2 = el.subcategoriacategoriasap
-                a.description = el.descripcion
-                a.use = el.uso
-                a.benefits = el.beneficio
-                // if ((el.descripcion) ? a.description = el.descripcion : a.description = '')
-                // if ((el.uso) ? a.use = el.uso : a.use = '')
-                // if ((el.beneficio) ? a.benefits = el.beneficio : a.benefits = '')
+//         final.forEach((el, i) => {
+//             let a = {}
+//             //let xEl = workbook._worksheets[1]._rows[1]._cells[i]._value.model.value
+//             if (el.infostatus == 'COMPLETADO' && el.sku && el.productid && el.descripcion && el.titulo && 
+//             el.categoriapadrecategorianodefinidaensap && 
+//             el.categoriacategoriapadresap && el.subcategoriacategoriasap) {
+//                 let copyEl = el
+//                 a.sku = el.sku
+//                 a.productId = el.productid
+//                 a.title = el.titulo
+//                 a.star = 'no'
+//                 a.status = 'enabled'
+//                 a.category = el.categoriapadrecategorianodefinidaensap
+//                 a.subCategory = el.categoriacategoriapadresap
+//                 a.subCategory2 = el.subcategoriacategoriasap
+//                 a.description = el.descripcion
+//                 a.use = el.uso
+//                 a.benefits = el.beneficio
+//                 // if ((el.descripcion) ? a.description = el.descripcion : a.description = '')
+//                 // if ((el.uso) ? a.use = el.uso : a.use = '')
+//                 // if ((el.beneficio) ? a.benefits = el.beneficio : a.benefits = '')
 
-                delete copyEl.sku
-                delete copyEl.productid
-                delete copyEl.infostatus
-                delete copyEl.titulo
-                delete copyEl.caracteristicas
-                delete copyEl.categoriapadrecategorianodefinidaensap
-                delete copyEl.categoriacategoriapadresap
-                delete copyEl.subcategoriacategoriasap
-                delete copyEl.descripcion
-                delete copyEl.uso
-                delete copyEl.beneficio
+//                 delete copyEl.sku
+//                 delete copyEl.productid
+//                 delete copyEl.infostatus
+//                 delete copyEl.titulo
+//                 delete copyEl.caracteristicas
+//                 delete copyEl.categoriapadrecategorianodefinidaensap
+//                 delete copyEl.categoriacategoriapadresap
+//                 delete copyEl.subcategoriacategoriasap
+//                 delete copyEl.descripcion
+//                 delete copyEl.uso
+//                 delete copyEl.beneficio
 
 
-                let infoFin = []
-                Object.keys(copyEl).forEach(e => {
-                    let dataNam = {}
-                    keyobjRaw.forEach(ell => {
-                        let clare = (removeAccents2(removeSpecials2((ell).trim()))).toLowerCase()
-                        if (e == clare) {
-                            dataNam.name = ell
-                            dataNam.data = copyEl[e]
-                            infoFin.push(dataNam)
-                        }
-                    });
+//                 let infoFin = []
+//                 Object.keys(copyEl).forEach(e => {
+//                     let dataNam = {}
+//                     keyobjRaw.forEach(ell => {
+//                         let clare = (removeAccents2(removeSpecials2((ell).trim()))).toLowerCase()
+//                         if (e == clare) {
+//                             dataNam.name = ell
+//                             dataNam.data = copyEl[e]
+//                             infoFin.push(dataNam)
+//                         }
+//                     });
 
-                });
+//                 });
 
-                // a.info = copyEl
-                a.info = infoFin
-                arraydata.push(a)
-            }
-        })
-        // console.log("aaaa", arraydata[0]);
-        try {
-            if (arraydata.length === 0) {
-                toastr.warning('No se ha encontrado ningun producto valido para ser ingresado')
-            } else {
+//                 // a.info = copyEl
+//                 a.info = infoFin
+//                 arraydata.push(a)
+//             }
+//         })
+//         // console.log("aaaa", arraydata[0]);
+//         try {
+//             if (arraydata.length === 0) {
+//                 toastr.warning('No se ha encontrado ningun producto valido para ser ingresado')
+//             } else {
                 
-                let res = await axios.post('/api/products', arraydata)
+//                 let res = await axios.post('/api/products', arraydata)
 
-                if (res.data.ok) {
+//                 if (res.data.ok) {
 
-                    loadDataToProductsTable()
+//                     loadDataToProductsTable()
 
-                    loadingHandler('stop')
-                    toastr.success('Producto(s) subido(s) correctamente')
-                    $('#modal').modal('hide')
-                } else {
-                    toastr.warning('Ha ocurrido un error al ingresar productos en la base de datos')
-                }
+//                     loadingHandler('stop')
+//                     toastr.success('Producto(s) subido(s) correctamente')
+//                     $('#modal').modal('hide')
+//                 } else {
+//                     toastr.warning('Ha ocurrido un error al ingresar productos en la base de datos')
+//                 }
+//             }
+//         } catch (error) {
+//             console.log("err", error)
+//         }
+//     });
+
+// }
+
+async function selectProduct(rowId) {
+    console.log(rowId)
+
+    let productSelectedData = await Swal.fire({
+        title: 'Seleccionar producto',
+        customClass: 'swal-wide',
+        html: `
+            <form id="searchProductForm">
+                <div class="form-group">
+                    <input id="searchProductName" class="form-control form-control-lg" type="text" placeholder="Nombre del producto" />
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block" id="searchProductBtn">BUSCAR</button>
+            </form>
+
+            <br/>
+            <div style="max-height: 400px !important; overflow-y: scroll;">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <td></td>
+                            <td>#</td>
+                            <td>CODIGO</td>
+                            <td>DETALLE</td>
+                        </tr>
+                    </thead>
+                    <tbody id="productsTable"></tbody>
+                </table>
+            </div>
+        `,
+        onBeforeOpen: () => {
+            try {
+                let productNameSelector = document.querySelector('#searchProductName')
+
+                setTimeout(() => {
+                    productNameSelector.focus()
+                }, 500)
+
+                document.querySelector('#searchProductForm').addEventListener('submit', async (evt) => {
+                    evt.preventDefault()
+
+                    let productName = productNameSelector.value || ''
+
+                    if (productName !== '') {
+                        loadingHandler('start')
+
+                        let res = await axios.post(`/api/product`, {
+                            name: productName
+                        })
+
+                        document.querySelector('#productsTable').innerHTML = res.data.reduce((acc, el, i) => {
+                            acc += `
+                                <tr onclick="selectProductRadio(${i})">
+                                    <td><input id="product-${i}" type="radio" name="product" data-codproducto="${el.codProducto}" data-description="${el.descripcion}"></td>
+                                    <td>${i + 1}</td>
+                                    <td>${el.code}</td>
+                                    <td>${el.name}</td>
+                                    <td>${el.size}</td>
+                                    <td>${el.color}</td>
+
+                                </tr>
+                            `
+
+                            return acc
+                        }, '')
+
+                        loadingHandler('stop')
+                    } else {
+                        toastr.warning('Ingrese nombre del producto')
+                    }
+                })
+            } catch (error) {
+                loadingHandler('stop')
+
+                console.log(error)
             }
-        } catch (error) {
-            console.log("err", error)
-        }
-    });
+        },
+        preConfirm: async () => {
+            try {
+                let productSelected = document.querySelector("input[name=product]:checked")
 
+                if (productSelected) {
+                    // obtener y asignar precio minimo
+                    let productMinValue = 0
+
+                    let productMinValueResponse = await axios.post('/api/product/productPrice', {
+                        code: productSelected.dataset.codproducto
+                    })
+
+                    console.log({productMinValueResponse})
+
+                    if (productMinValueResponse.data.costoUnitario) {
+                        productMinValue = productMinValueResponse.data.costoUnitario
+                    }
+
+                    return {
+                        ...productSelected.dataset,
+                        minValue: productMinValue
+                    }
+                }
+
+                throw new Error('Debe seleccionar un producto.')
+            } catch (error) {
+                Swal.showValidationMessage(error)
+            }
+        },
+        showCloseButton: true,
+        showCancelButton: true,
+        showConfirmButton: true,
+        focusConfirm: false,
+        confirmButtonText: 'Seleccionar',
+        cancelButtonText: 'Cancelar'
+    })
+
+    if (productSelectedData.value) {
+        internals.newCot.productsRowsData[rowId].product.code = productSelectedData.value.codproducto
+        internals.newCot.productsRowsData[rowId].product.name = productSelectedData.value.description
+        internals.newCot.productsRowsData[rowId].product.minValue = Math.round(productSelectedData.value.minValue)
+
+        document.querySelector(`#productCode-${rowId}`).innerHTML = productSelectedData.value.codproducto
+        document.querySelector(`#productName-${rowId}`).innerHTML = productSelectedData.value.description
+        document.querySelector(`#productMinPrice-${rowId}`).innerHTML = Math.round(productSelectedData.value.minValue)
+    }
+}
+
+function selectProductRadio(id) {
+    document.querySelector(`#product-${id}`).click()
 }
 
 async function saveProduct(product) {
