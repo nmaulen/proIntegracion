@@ -50,7 +50,7 @@ function chargeUsersTable() {
             $(this).addClass('selected');
             $('#optionModShoes').prop('disabled', false)
             $('#optionDeleteShoe').prop('disabled', false)
-            proRowSelectedData = datatableShoes.row($(this)).data()
+            proRowSelectedData = cleanData(datatableShoes.row($(this)).data())
             proRowSelected = datatableShoes.row($(this))
         }
     })
@@ -105,38 +105,43 @@ $('#optionDeleteShoe').on('click', function() {
 
 })
 
-async function deleteUser(_id, name) {
-    let result = await Swal.fire({
-        title: `Eliminar producto ${name}`,
-        type: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        buttonsStyling: false,
-        confirmButtonText: 'Aceptar',
-        cancelButtonText: 'Cancelar',
-        customClass: {
-            confirmButton: 'btn btn-danger',
-            cancelButton: 'btn btn-primary'
-        }
-    });
-
-    if (result.value) {
-        let delPro = await axios.delete(`api/products/${_id}`);
-
-        if (delPro.data.ok) {
-            $('#optionModShoes').prop('disabled', true)
-            $('#optionDeleteShoe').prop('disabled', true)
-            toastr.success(`Producto "${name}" eliminado correctamente`);
-            datatableShoes
-            .row( proRowSelected )
-            .remove()
-            .draw()
-
-        } else {
-            toastr.warning(`Ha ocurrido un error al intentar eliminar`);
+async function deleteUser(_id, name, rol) {
+    console.log("rol", rol);
+    if (rol !== "sadmin") {
+        let result = await Swal.fire({
+            title: `Eliminar producto ${name}`,
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            buttonsStyling: false,
+            confirmButtonText: 'Aceptar',
+            cancelButtonText: 'Cancelar',
+            customClass: {
+                confirmButton: 'btn btn-danger',
+                cancelButton: 'btn btn-primary'
+            }
+        });
+    
+        if (result.value) {
+            let delPro = await axios.delete(`api/products/${_id}`);
+    
+            if (delPro.data.ok) {
+                $('#optionModShoes').prop('disabled', true)
+                $('#optionDeleteShoe').prop('disabled', true)
+                toastr.success(`Producto "${name}" eliminado correctamente`);
+                datatableShoes
+                .row( proRowSelected )
+                .remove()
+                .draw()
+    
+            } else {
+                toastr.warning(`Ha ocurrido un error al intentar eliminar`);
+            }
         }
     }
+    toastr.warning(`producto "${name}" no puede ser eliminado`);
+
 }
 
 
@@ -144,7 +149,7 @@ async function deleteUser(_id, name) {
 
 $('#optionModShoes').on('click', function() {
     $('#shoesModal').modal('show');
-    $('#modal_title').html(`Modificar producto: ${capitalizeAll(proRowSelectedData.name)}`)
+    $('#modal_title').html(`Modificar producto: ${capitalizeAll(proRowSelectedData.name)} ${capitalizeAll(proRowSelectedData.lastname)}`)
     modNewPro(proRowSelectedData)
 
     let mod = 'yes'
@@ -157,7 +162,7 @@ $('#optionModShoes').on('click', function() {
 //     return $.formatRut(rut)
 // }
 
-function modNewPro(modUserData) {   //NEW AND MOD USER
+function modNewPro(modProData) {   //NEW AND MOD USER
     $.when($('#modal_body').html(`
     <div class="row">
         <div class="col-md-4" style="margin-top:10px;">
@@ -238,28 +243,35 @@ function modNewPro(modUserData) {   //NEW AND MOD USER
         $('#pricePro').val((this.value))
     })
 
-    if (!modUserData) {
+    if (!modProData) {
         setTimeout(() => {
             $('#codePro').focus()
         }, 500)
     } else {
-        $('#codePro').val(modUserData.code);
-        $('#codePro').attr('readOnly', true);
-        $('#namePro').val(modUserData.name);
-        $('#brandPro').val(modUserData.brand);
-        $('#sizePro').val(modUserData.size);
+        // let ruto = validateRut(modProData.rut)
+        // let rutVal
+        // if (ruto.isValid ) {
+        //     rutVal = ruto.getNiceRut()
+        // } else {
+        //     rutVal = modProData.rut
+        // }
+        // $('#namePro').val(rutVal);
+        $('#codePro').val(modProData.code);
+        $('#namePro').attr('readOnly', true);
+        $('#brandPro').val(modProData.brand);
+        $('#sizePro').val(modProData.size);
 
-        // if (modUserData.scope == 'admin' || modUserData.scope == 'Administrador') {
+        // if (modProData.scope == 'admin' || modProData.scope == 'Administrador') {
         //     // $('#newUserRole').val('admin').trigger("change");
         //     $('#newUserRole').val('Administrador');
-        // } else if (modUserData.scope == 'sadmin' || modUserData.scope == 'Super Administrador') {
+        // } else if (modProData.scope == 'sadmin' || modProData.scope == 'Super Administrador') {
         //     $('#newUserRole').val('Super Administrador');
         // }
 
-        $('#colorPro').val(modUserData.color);
-        $('#qtyPro').val(modUserData.qty);
-        $('#categoryPro').val(modUserData.category);
-        $('#pricePro').val(modUserData.price);
+        $('#colorPro').val(modProData.color);
+        $('#qtyPro').val(modProData.qty);
+        $('#categoryPro').val(modProData.category);
+        $('#pricePro').val(modProData.price);
 
     }
     
@@ -303,8 +315,6 @@ async function saveProd(mod) {
     }
     if (mod) userData.mod = mod
 
-    console.log("antes validacion", userData);
-
     let validUser = await validateUserData(userData)
 
     if (validUser) {
@@ -313,13 +323,17 @@ async function saveProd(mod) {
             if (mod) {
                 toastr.success('El producto se ha modificado correctamente')
 
-                // if (saveProdRes.data.scope == 'admin') saveProdRes.data.scope = "Administrador"
-                // if (saveProdRes.data.scope == 'sadmin') saveProdRes.data.scope = "Super Administrador"
+                let rut = validateRut(saveProdRes.data.rut)
+                if (rut.isValid ) {
+                    saveProdRes.data.rut = rut.getNiceRut()
+                }
+
+                if (saveProdRes.data.scope == 'admin') saveProdRes.data.scope = "Administrador"
+                if (saveProdRes.data.scope == 'sadmin') saveProdRes.data.scope = "Super Administrador"
 
                 $('#optionModShoes').prop('disabled', true)
                 $('#optionDeleteShoe').prop('disabled', true)
 
-                console.log("selected",proRowSelected);
                 datatableShoes
                 .row( proRowSelected )
                 .remove()
@@ -342,13 +356,13 @@ async function saveProd(mod) {
             } else {
                 toastr.success('El producto se ha creado correctamente')
 
-                // let rut = validateRut(saveProdRes.data.rut)
-                // if (rut.isValid ) {
-                //     saveProdRes.data.rut = rut.getNiceRut()
-                // }
+                let rut = validateRut(saveProdRes.data.rut)
+                if (rut.isValid ) {
+                    saveProdRes.data.rut = rut.getNiceRut()
+                }
 
-                // if (saveProdRes.data.scope == 'admin') saveProdRes.data.scope = "Administrador"
-                // if (saveProdRes.data.scope == 'sadmin') saveProdRes.data.scope = "Super Administrador"
+                if (saveProdRes.data.scope == 'admin') saveProdRes.data.scope = "Administrador"
+                if (saveProdRes.data.scope == 'sadmin') saveProdRes.data.scope = "Super Administrador"
 
                 $('#optionModShoes').prop('disabled', true)
                 $('#optionDeleteShoe').prop('disabled', true)
@@ -380,84 +394,130 @@ async function validateUserData(userData) {
     let validationCounter = 0
     let errorMessage = ''
 
-    // 8 puntos
-    if(userData.code.length > 1) { // 1
-        validationCounter++
-        $('#codePro').css('border', '1px solid #3498db')
-    } else {
-        errorMessage += `<br>Debe ingresar el nombre del producto`
-        $('#codePro').css('border', '1px solid #e74c3c')
-    }
+    // return new Promise(resolve=>{
+        // 5 puntos
+        if(userData.name.length > 1) { // 1
+            validationCounter++
+            $('#codePro').css('border', '1px solid #3498db')
+        } else {
+            errorMessage += `<br>Debe ingresar el nombre del producto`
+            $('#codePro').css('border', '1px solid #e74c3c')
+        }
 
-    if(userData.name.length > 1) { // 2
-        validationCounter++
-        $('#namePro').css('border', '1px solid #3498db')
-    } else {
-        errorMessage += `<br>Debe ingresar el nombre del producto`
-        $('#namePro').css('border', '1px solid #e74c3c')
-    }
+        if(userData.name.length > 1) { // 1
+            validationCounter++
+            $('#namePro').css('border', '1px solid #3498db')
+        } else {
+            errorMessage += `<br>Debe ingresar el nombre del producto`
+            $('#namePro').css('border', '1px solid #e74c3c')
+        }
 
-    if(userData.brand.length > 1) { // 3
-        validationCounter++
-        $('#brandPro').css('border', '1px solid #3498db')
-    } else {
-        errorMessage += `<br>Debe ingresar marca del producto</b>`
-        $('#brandPro').css('border', '1px solid #e74c3c')
-    }
+        if(userData.brand.length > 1) { // 2
+            validationCounter++
+            $('#brandPro').css('border', '1px solid #3498db')
+        } else {
+            errorMessage += `<br>Debe ingresar marca del producto</b>`
+            $('#brandPro').css('border', '1px solid #e74c3c')
+        }
 
-    if(userData.size.length > 1) { // 4
-        validationCounter++
-        $('#sizePro').css('border', '1px solid #3498db')
-    } else {
-        errorMessage += `<br>Debe ingresar una talla de producto`
-        $('#sizePro').css('border', '1px solid #e74c3c')
-    }
+        if(userData.size.length > 1) { // 3
+            validationCounter++
+            $('#sizePro').css('border', '1px solid #3498db')
+        } else {
+            errorMessage += `<br>Debe ingresar una talla de producto`
+            $('#sizePro').css('border', '1px solid #e74c3c')
+        }
 
-    if(userData.color.length > 1) { // 5
-        validationCounter++
-        $('#colorPro').css('border', '1px solid #3498db')
-    } else {
-        errorMessage += `<br>Debe ingresar un color de producto`
-        $('#colorPro').css('border', '1px solid #e74c3c')
-    }
+        if(userData.color.length > 1) { // 4
+            validationCounter++
+            $('#colorPro').css('border', '1px solid #3498db')
+        } else {
+            errorMessage += `<br>Debe ingresar un color de producto`
+            $('#colorPro').css('border', '1px solid #e74c3c')
+        }
 
-    if(userData.qty.length > 1) { // 6
-        validationCounter++
-        $('#qtyPro').css('border', '1px solid #3498db')
-    } else {
-        errorMessage += `<br>Debe ingresar una talla de producto`
-        $('#qtyPro').css('border', '1px solid #e74c3c')
-    }
+        if(userData.qty.length > 1) { // 5
+            validationCounter++
+            $('#qtyPro').css('border', '1px solid #3498db')
+        } else {
+            errorMessage += `<br>Debe ingresar una talla de producto`
+            $('#qtyPro').css('border', '1px solid #e74c3c')
+        }
 
-    if(userData.category.length > 1) { // 7
-        validationCounter++
-        $('#categoryPro').css('border', '1px solid #3498db')
-    } else {
-        errorMessage += `<br>Debe ingresar una categoria de producto`
-        $('#categoryPro').css('border', '1px solid #e74c3c')
-    }
+        if(userData.category.length > 1) { // 6
+            validationCounter++
+            $('#categoryPro').css('border', '1px solid #3498db')
+        } else {
+            errorMessage += `<br>Debe ingresar una categoria de producto`
+            $('#categoryPro').css('border', '1px solid #e74c3c')
+        }
 
-    if(userData.price.length > 1) { // 8
-        validationCounter++
-        $('#pricePro').css('border', '1px solid #3498db')
-    } else {
-        errorMessage += `<br>Debe ingresar un precio de producto`
-        $('#pricePro').css('border', '1px solid #e74c3c')
-    }
+        if(userData.price.length > 1) { // 7
+            validationCounter++
+            $('#pricePro').css('border', '1px solid #3498db')
+        } else {
+            errorMessage += `<br>Debe ingresar un precio de producto`
+            $('#pricePro').css('border', '1px solid #e74c3c')
+        }
 
-    console.log('validation', validationCounter)
-    if(validationCounter == 8) {
-        $('#newUserErrorMessage').empty()
-        return {ok: userData}
-    } else {
-        $('#newUserErrorMessage').html(`
-        <div class="alert alert-dismissible alert-warning">
-            <button type="button" class="close" data-dismiss="alert">&times;</button>
-            <h4 class="alert-heading">Debe solucionar los siguientes errores</h4>
-            <p class="mb-0">${errorMessage}</p>
-        </div>
-        `)
 
-        return {err: userData}
-    }
+
+
+        // if(userData.phone.length > 1) { // 5
+        //     validationCounter++
+        //     $('#newUserPhone').css('border', '1px solid #3498db')
+        // } else {
+        //     errorMessage += `<br>Debe ingresar el teléfono del producto`
+        //     $('#newUserPhone').css('border', '1px solid #e74c3c')
+        // }
+
+        // if(isEmail(userData.email)) { // 6
+        //     validationCounter++
+        //     $('#newUserEmail').css('border', '1px solid #3498db')
+        // } else {
+        //     errorMessage += `<br>Debe ingresar el correo del producto`
+        //     $('#newUserEmail').css('border', '1px solid #e74c3c')
+        // }
+
+        // if (userData.mod == 'yes') {
+
+        //     if(userData.changePassword) {
+        //         if(userData.password.length > 1) { // 4
+        //             validationCounter++
+        //             $('#modUserPassword').css('border', '1px solid #3498db')
+        //         } else {
+        //             errorMessage += `<br>Debe ingresar una contraseña`
+        //             $('#modUserPassword').css('border', '1px solid #e74c3c')
+        //         }
+        //     } else {
+        //         validationCounter++
+        //     }
+
+        // } else {
+        //     if(userData.password.length > 5) { // 4
+        //         validationCounter++
+        //         $('#newUserPassword').css('border', '1px solid #3498db')
+        //     } else {
+        //         errorMessage += `<br>Debe ingresar una contraseña valida de mas de 5 caracteres`
+        //         $('#newUserPassword').css('border', '1px solid #e74c3c')
+        //     }
+
+        // }
+
+        console.log('validation', validationCounter)
+        if(validationCounter == 7) {
+            $('#newUserErrorMessage').empty()
+            return {ok: userData}
+        } else {
+            $('#newUserErrorMessage').html(`
+            <div class="alert alert-dismissible alert-warning">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                <h4 class="alert-heading">Debe solucionar los siguientes errores</h4>
+                <p class="mb-0">${errorMessage}</p>
+            </div>
+            `)
+
+            return {err: userData}
+        }
+    // })
 }
