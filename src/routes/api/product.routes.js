@@ -22,31 +22,15 @@ module.exports = [
 
                     let productExist = await Product.find(query)
 
-                    // if (request.payload.scope == 'Super Administrador'){
-                    //     request.payload.scope = "sadmin"
-                    // } else if (request.payload.scope == 'Administrador'){
-                    //     request.payload.scope = "admin"
-                    // }
-
                     if (productExist[0]) {
                         if (request.payload.mod == 'yes') {
-
-                            if (request.payload.password == '') {
-                                request.payload.password = productExist[0].password
-                            }
-
-                            if (!validatePassword(productExist[0].password, request.payload.password)) {
-                                request.payload.password = hashPassword(request.payload.password)
-                            }
 
                             delete request.payload.mod
                             let product = await Product(request.payload);
                             product._id = productExist[0]._id
-                            let productSaved = await product.findByIdAndUpdate(productExist[0]._id, product)
+                            let productSaved = await Product.findByIdAndUpdate(productExist[0]._id, product)
 
-                            productSaved.password = '';
-
-                            return productSaved
+                            return product
 
                         } else {
                             console.log("error1");
@@ -56,22 +40,10 @@ module.exports = [
                         }
                     }
 
-                    // let productPassword = generatePassword()
-
-                    //     let newproduct = new product({
-                    //         cod: payload.cod,
-                    //         status: payload.status,
-                    //         scope: payload.scope,
-                    //         password: hashPassword(productPassword)
-                    //     })
-                    // request.payload.password = hashPassword(request.payload.password)
-
                     delete request.payload.mod
                     let product = await Product(request.payload);
 
                     let productSaved = await product.save();
-
-                    productSaved.password = '';
 
                     return productSaved
 
@@ -92,7 +64,8 @@ module.exports = [
                     color: Joi.string().required(),
                     qty: Joi.string().allow(null, ''),
                     category: Joi.string().required(),
-                    price: Joi.string().required()
+                    price: Joi.string().required(),
+                    mod: Joi.string()
                 })
             }
         }
