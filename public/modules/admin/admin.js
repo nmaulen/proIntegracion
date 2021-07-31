@@ -81,19 +81,19 @@ async function initProductsTable() {
 
     loadDataToProductsTable()
 
-    $('#productsTable tbody').on('click', '.featureProduct', async function () {
-        var data = internals.tables.products.datatable.row($(this).parents('tr')).data();
+    // $('#productsTable tbody').on('click', '.featureProduct', async function () {
+    //     var data = internals.tables.products.datatable.row($(this).parents('tr')).data();
 
-        if (this.innerHTML.includes("fas")) {
-            data.star = 'no'
-            await axios.post('/api/productsStar', data)
-            this.innerHTML = "<i class=\"far fa-star\"></i>"
-        } else {
-            data.star = 'yes'
-            await axios.post('/api/productsStar', data)
-            this.innerHTML = "<i class=\"fas fa-star\"></i>"
-        }
-    });
+    //     if (this.innerHTML.includes("fas")) {
+    //         data.star = 'no'
+    //         await axios.post('/api/productsStar', data)
+    //         this.innerHTML = "<i class=\"far fa-star\"></i>"
+    //     } else {
+    //         data.star = 'yes'
+    //         await axios.post('/api/productsStar', data)
+    //         this.innerHTML = "<i class=\"fas fa-star\"></i>"
+    //     }
+    // });
 
     $('#productsTable tbody').on('click', '.delProduct', async function () {
         var data = internals.tables.products.datatable.row($(this).parents('tr')).data();
@@ -366,16 +366,15 @@ async function initProductsTable() {
     loadingHandler('stop')
 }
 
-
 async function loadDataToProductsTable(filter) {
     loadingHandler('start')
     try {
         let result
-        if (filter || $('#filterStar')[0].checked) {
-            result = await axios.get('api/productsStar')
-        } else {
-            result = await axios.get('api/products')
-        }
+        // if (filter || $('#filterStar')[0].checked) {
+        //     result = await axios.get('api/productsStar')
+        // } else {
+        //     result = await axios.get('api/products')
+        // }
 
         let productsData = result.data
 
@@ -883,7 +882,7 @@ async function selectProduct(rowId) {
                             <td>MARCA</td>
                         </tr>
                     </thead>
-                    <tbody id="productsTable"></tbody>
+                    <tbody id="productosTable"></tbody>
                 </table>
             </div>
         `,
@@ -907,7 +906,7 @@ async function selectProduct(rowId) {
                             name: productName
                         })
 
-                        document.querySelector('#productsTable').innerHTML = res.data.reduce((acc, el, i) => {
+                        document.querySelector('#productosTable').innerHTML = res.data.reduce((acc, el, i) => {
                             acc += `
                                 <tr onclick="selectProductRadio(${i})">
                                     <td><input id="product-${i}" type="radio" name="product" data-codproducto="${el.codProducto}" data-description="${el.descripcion}"></td>
@@ -938,25 +937,24 @@ async function selectProduct(rowId) {
             try {
                 let productSelected = document.querySelector("input[name=product]:checked")
 
-                // if (productSelected) {
-                //     // obtener y asignar precio minimo
-                //     let productMinValue = 0
+                if (productSelected) {
+                    // obtener y asignar precio minimo
+                    
 
-                //     let productMinValueResponse = await axios.post('/api/product/productPrice', {
-                //         code: productSelected.dataset.codproducto
-                //     })
+                    // let productMinValueResponse = await axios.post('/api/product/productPrice', {
+                    //     code: productSelected.dataset.codproducto
+                    // })
 
-                //     console.log({productMinValueResponse})
+                    console.log({productMinValueResponse})
 
-                //     if (productMinValueResponse.data.costoUnitario) {
-                //         productMinValue = productMinValueResponse.data.costoUnitario
-                //     }
+                    // if (productMinValueResponse.data.costoUnitario) {
+                    //     productMinValue = productMinValueResponse.data.costoUnitario
+                    // }
 
-                //     return {
-                //         ...productSelected.dataset,
-                //         minValue: productMinValue
-                //     }
-                // }
+                    return {
+                        ...productSelected.dataset
+                    }
+                }
 
                 throw new Error('Debe seleccionar un producto.')
             } catch (error) {

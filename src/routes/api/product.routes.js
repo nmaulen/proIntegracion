@@ -71,6 +71,45 @@ module.exports = [
         }
     },
     {
+        method: 'POST',
+        path: '/api/products',
+        options: {
+            auth: { mode: 'try' },
+            description: 'check api',
+            notes: 'if api doesn t exist return error',
+            tags: ['api'],
+            handler: async (request, h) => {
+                try {
+                    let query = {
+                        $or: [
+                            {
+                                name: {
+                                    $regex: new RegExp(request.payload.name)
+                                }
+                            },
+                            
+                        ]
+                    }
+
+                    let result = await Product.find(query).lean();
+
+                    return result
+                } catch (error) {
+                    console.log(error);
+
+                    return h.response({
+                        error: 'Ha ocurrido un error al buscar productos, por favor recargue la página e intentelo nuevamente.'
+                    }).code(500);
+                }
+            },
+            validate: {
+                payload: Joi.object().keys({
+                    name: Joi.string().required()
+                })
+            }
+        }
+    },
+    {
         method: 'DELETE',
         path: '/api/products/{_id}',
         options: {
