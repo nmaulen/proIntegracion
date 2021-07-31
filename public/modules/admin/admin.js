@@ -945,7 +945,7 @@ async function selectProduct(rowId) {
                     //     code: productSelected.dataset.codproducto
                     // })
 
-                    console.log({productMinValueResponse})
+                    // console.log({productMinValueResponse})
 
                     // if (productMinValueResponse.data.costoUnitario) {
                     //     productMinValue = productMinValueResponse.data.costoUnitario
