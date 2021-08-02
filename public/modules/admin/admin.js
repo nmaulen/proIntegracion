@@ -462,7 +462,7 @@ const handleModal = (originalData) => {
                     <div class="col-md-12 form-group">
                         <fieldset">
                             <label class="control-label" for="seller">Vendedor</label>
-                            <input class="form-control" id="seller" type="text" value="${internals.newSale.name} " disabled="">
+                            <input class="form-control" id="seller" type="text" value="${(internals.newSale.name) ? internals.newSale.name : "Vendedor" } " disabled="">
                         </fieldset>
                     </div>
 
@@ -615,9 +615,9 @@ function drawTableBody() {
                     ${(el.product.brand === '') ? '-SELECCIONE PRODUCTO-' : el.product.brand}
                 </td>
                 <td>
-                    <input class="productInputQty rowInput" data-row="${i}" id="productQty-${i}" type="text" value="${el.qty}">
+                    <input class="productInputQty rowInput" data-row="${i}" id="productQty-${i}" type="text" value="${el.qty}" onkeyup="totalCalc(this)">
                 </td>
-                <td id="productBrand-${i}">
+                <td id="productPrice-${i}">
                     ${(el.product.price === '') ? '-SELECCIONE PRODUCTO-' : el.product.price}
                 </td>
                 <td style="width: 150px !important;"><span>$ </span><span id="subTotal-${i}" >${dot_separators(el.rowSubTotal)}</span></td>
@@ -906,10 +906,14 @@ async function selectProduct(rowId) {
                             name: productName
                         })
 
+                        console.log("rtes???", res);
+                        console.log("selected?", document.querySelector('#searchProductName'));
+
                         document.querySelector('#productosTable').innerHTML = res.data.reduce((acc, el, i) => {
                             acc += `
                                 <tr onclick="selectProductRadio(${i})">
-                                    <td><input id="product-${i}" type="radio" name="product" data-codproducto="${el.codProducto}" data-description="${el.descripcion}"></td>
+                                    <td><input id="product-${i}" type="radio" name="product" data-code="${el.code}" data-name="${el.name}" data-size="${el.size}"
+                                    data-color="${el.color}" data-brand="${el.brand}" data-price="${el.price}"></td>
                                     <td>${i + 1}</td>
                                     <td>${el.code}</td>
                                     <td>${el.name}</td>
@@ -936,7 +940,7 @@ async function selectProduct(rowId) {
         preConfirm: async () => {
             try {
                 let productSelected = document.querySelector("input[name=product]:checked")
-
+                console.log("este si es selectred?", productSelected);
                 if (productSelected) {
                     // obtener y asignar precio minimo
                     
@@ -970,24 +974,35 @@ async function selectProduct(rowId) {
     })
 
     if (productSelectedData.value) {
-        internals.newCot.productsRowsData[rowId].product.code = productSelectedData.value.code
-        internals.newCot.productsRowsData[rowId].product.name = productSelectedData.value.name
-        internals.newCot.productsRowsData[rowId].product.size = productSelectedData.value.size
-        internals.newCot.productsRowsData[rowId].product.color = productSelectedData.value.color
-        internals.newCot.productsRowsData[rowId].product.brand = productSelectedData.value.brand
-        // internals.newCot.productsRowsData[rowId].product.minValue = Math.round(productSelectedData.value.minValue)
+        console.log("value? ", productSelectedData.value);
+        internals.newSale.productsRowsData[rowId].product.code = productSelectedData.value.code
+        internals.newSale.productsRowsData[rowId].product.name = productSelectedData.value.name
+        internals.newSale.productsRowsData[rowId].product.size = productSelectedData.value.size
+        internals.newSale.productsRowsData[rowId].product.color = productSelectedData.value.color
+        internals.newSale.productsRowsData[rowId].product.brand = productSelectedData.value.brand
+        internals.newSale.productsRowsData[rowId].product.price = productSelectedData.value.price
+        // internals.newSale.productsRowsData[rowId].product.minValue = Math.round(productSelectedData.value.minValue)
 
         document.querySelector(`#productCode-${rowId}`).innerHTML = productSelectedData.value.code
         document.querySelector(`#productName-${rowId}`).innerHTML = productSelectedData.value.name
         document.querySelector(`#productSize-${rowId}`).innerHTML = productSelectedData.value.size
         document.querySelector(`#productColor-${rowId}`).innerHTML = productSelectedData.value.color
         document.querySelector(`#productBrand-${rowId}`).innerHTML = productSelectedData.value.brand
+        document.querySelector(`#productPrice-${rowId}`).innerHTML = productSelectedData.value.price
         // document.querySelector(`#productMinPrice-${rowId}`).innerHTML = Math.round(productSelectedData.value.minValue)
     }
 }
 
 function selectProductRadio(id) {
     document.querySelector(`#product-${id}`).click()
+    console.log("que hace esto?",document.querySelector(`#product-${id}`));
+}
+
+function totalCalc(val) {
+    console.log("valor", val.value);
+    let nRowId = val.id.split('-')
+
+    document.querySelector(`#subTotal-${nRowId[1]}`).innerHTML = number_format(val.value * document.querySelector(`#productPrice-${nRowId[1]}`).innerHTML)
 }
 
 // async function saveProduct(product) {
@@ -1176,4 +1191,26 @@ function removeSpecials2(data) {
 function removeAccents2(data) {
     data = data.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
     return data
+}
+
+const number_format = (amount, decimals) => {
+    amount += ''; // por si pasan un numero en vez de un string
+    amount = parseFloat(amount.replace(/[^0-9\.]/g, '')); // elimino cualquier cosa que no sea numero o punto
+
+    decimals = decimals || 0; // por si la variable no fue fue pasada
+
+    // si no es un numero o es igual a cero retorno el mismo cero
+    if (isNaN(amount) || amount === 0)
+        return parseFloat(0).toFixed(decimals);
+
+    // si es mayor o menor que cero retorno el valor formateado como numero
+    amount = '' + amount.toFixed(decimals);
+
+    var amount_parts = amount.split('.'),
+        regexp = /(\d+)(\d{3})/;
+
+    while (regexp.test(amount_parts[0]))
+        amount_parts[0] = amount_parts[0].replace(regexp, '$1' + '.' + '$2');
+
+    return amount_parts.join('.');
 }
