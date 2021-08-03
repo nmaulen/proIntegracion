@@ -53,13 +53,8 @@ async function initProductsTable() {
         responsive: false,
         columns: [
             { data: 'code' },
-            { data: 'name' },
-            { data: 'brand'},
-            { data: 'size' },
-            { data: 'color' },
-            { data: 'qty' },
-            { data: 'category'},
-            { data: 'price'}
+            { data: 'fechaEmision' },
+            { data: 'total'}
         ],
 
         // rowCallback: function (row, data, index) {
@@ -451,7 +446,7 @@ const handleModal = (originalData) => {
     
     internals.selectedSaleProducts = internals.newSale.productsRowsData
 
-    modalSelector.title.innerHTML = internals.newSale.title
+    modalSelector.title.innerHTML = (internals.newSale.title) ? internals.newSale.title : "Nueva Venta"
 
     modalSelector.body.innerHTML = `
     <div class="container-fluid">
@@ -527,7 +522,7 @@ const handleModal = (originalData) => {
     <i style="color:#e74c3c;" class="fas fa-times"></i> Cancelar
     </button>
 
-    <button  class="btn btn-dark" id="saveExcel">
+    <button  class="btn btn-dark" id="saveSale">
     <i style="color:#3498db;" class="fas fa-check"></i> Guardar
     </button>
 	`
@@ -562,6 +557,74 @@ const handleModal = (originalData) => {
         drawTableBody()
     })
 
+    if (document.querySelector('#saveSale')) {
+        document.querySelector('#saveSale').addEventListener('click', async ()=> {
+            //console.log('test', validateCotHandler())
+            if (validateCotHandler()) {
+                let confirmCot = await Swal.fire({
+                    title: 'Estás seguro de guardar la boleta?',
+                    showCancelButton: true,
+                    confirmButtonText: `Guardar`,
+                    denyButtonText: `Cancelar`,
+                })
+        
+                if (confirmCot.value) {
+                    saveSale()
+                }
+            }
+        })
+    }
+
+}
+async function saveSale() {
+    try {
+        loadingHandler('start')
+
+        let newSaleData = {
+            //idCot: internals.newSale.number,
+            //fechaEntrega: internals.newSale.deliveryDate,
+            //fechaExpiracion: internals.newSale.expirationDate,
+            products: internals.newSale.productsRowsData.reduce((acc,el,i) => {
+                acc.push({
+                    linea: i+1,
+                    codProducto: el.product.code,
+                    nombreProducto: el.product.name,
+                    qty: parseInt(el.qty),
+                    precio: parseInt(el.price),
+                    total: parseInt(el.rowSubTotal)
+                })
+
+                return acc
+            }, [])
+        }
+
+        if (internals.newSale.code) {
+            newSaleData.code = internals.newSale.number
+        }
+
+        console.log('newSaleData', newSaleData)
+
+        let saveSaleRes = await axios.post('/api/boleta', newSaleData)
+
+        console.log('saveSaleRes', saveSaleRes)
+
+        if (saveSaleRes.data) {
+            toastr.success(`Boleta ${saveSaleRes.data} guardada correctamente.`)
+            initCots()
+
+            $('#modal').modal('hide')
+
+            searchCots()
+
+            return saveSaleRes.data
+        }
+    } catch (error) {
+        console.log(error)
+
+        loadingHandler('stop')
+        toastr.error('Ha ocurrido un error. Por favor recargue la página e intentelo nuevamente.')
+        return false
+    }
 }
 
 function addRowToTable() {
@@ -656,11 +719,84 @@ function drawTableBody() {
     updateFinalsAmounts()
 }
 
+function validateCotHandler() {
+    // internals.newSale.observations = document.querySelector('#observationsText').value
+    console.log(internals.newSale)
+
+    let validationCounter = 0
+    let errorMessage = ''
+
+    // if (internals.newSale.clientData.cod && internals.newSale.clientData.rut && internals.newSale.clientData.name) {
+    //     validationCounter += 1
+    // } else {
+    //     errorMessage += '* Debe seleccionar un cliente. <br>'
+    // }
+
+    if (internals.newSale.productsRowsData[0]) {
+        validationCounter += 1
+
+        internals.newSale.productsRowsData.forEach((el, i)=> {
+            if (el.rowSubTotal === 0) {
+                validationCounter -= 1
+                errorMessage += `* El sub total de la fila ${i+1} no puede ser 0. <br>`
+            }
+
+            if (el.product.code.length === 0) {
+                validationCounter -= 1
+                errorMessage += `* Debe seleccionar un producto en la fila ${i+1}. <br>`
+            }
+        })
+    } else {
+        errorMessage += '* Debe agregar al menos 1 producto. <br>'
+    }
+
+    console.log({validationCounter})
+    if (validationCounter === 1) {
+        return true
+    }
+
+    toastr.warning(errorMessage)
+
+    return false
+
+    // let cotCreationAuthResponse = await axios.post('/api/requireAuthCot', {
+    //     client: {
+    //         cod: internals.newSale.clientsData.cod,
+    //         rut: internals.newSale.clientsData.rut,
+    //         name: internals.newSale.clientsData.name,
+    //         email: internals.newSale.clientsData.email
+    //     },
+    //     products: internals.newSale.productsRowsData.reduce((acc,el,i) => {
+    //         acc.push({
+    //             code: el.product.code,
+    //             name: el.product.name,
+    //             price: el.price,
+    //             qty: el.qty,
+    //             rowSubTotal: el.rowSubTotal
+    //         })
+
+    //         return acc
+    //     }, [])
+    // })
+
+    // waitingForAuthScreenHandler('start')
+    // console.log(cotCreationAuthResponse)
+    // internals.newSale.authRequest = cotCreationAuthResponse.data // codigo de la solicitud
+
+    // let saveCotRes = await axios.post('/api/newSale', {
+    //     test: 'test'
+    // })
+
+    // console.log(saveCotRes)
+}
 async function updateFinalsAmounts(rt = false) {
 
+    // console.log("aaaaaaaa",parseInt(removePoints(internals.newSale.productsRowsData[0].rowSubTotal)));
+
     let subtotals = internals.newSale.productsRowsData.reduce((acc, el, i) => {
-        // el.rowSubTotal = parseInt(el.rowSubTotal)
-        acc += el.rowSubTotal
+        let valuePar = removePoints(el.rowSubTotal)
+        // el.rowSubTotal = parseInt(valuePar)
+        acc += parseInt(valuePar)
 
         return acc
     }, 0)
@@ -687,9 +823,11 @@ async function updateFinalsAmounts(rt = false) {
     // internals.newSale.tax = amounts.tax
     internals.newSale.total = amounts.total
 
+    console.log("totalasas", amounts.total);
+
     // document.getElementById('quoteSubtotal').innerHTML = `$ ${dot_separators(amounts.subtotals)}`
     // document.getElementById('quoteTax').innerHTML = `$ ${dot_separators(amounts.tax)}`
-    document.getElementById('quoteTotal').innerHTML = `$ ${dot_separators(amounts.total)}`
+    document.getElementById('saleTotal').innerHTML = `$ ${dot_separators(amounts.total)}`
 }
 
 
@@ -1003,6 +1141,12 @@ function totalCalc(val) {
     let nRowId = val.id.split('-')
 
     document.querySelector(`#subTotal-${nRowId[1]}`).innerHTML = number_format(val.value * document.querySelector(`#productPrice-${nRowId[1]}`).innerHTML)
+    
+    
+    internals.newSale.productsRowsData[nRowId[1]].qty = val.value
+    internals.newSale.productsRowsData[nRowId[1]].rowSubTotal = document.querySelector(`#subTotal-${nRowId[1]}`).innerHTML
+
+    updateFinalsAmounts()
 }
 
 // async function saveProduct(product) {
@@ -1213,4 +1357,9 @@ const number_format = (amount, decimals) => {
         amount_parts[0] = amount_parts[0].replace(regexp, '$1' + '.' + '$2');
 
     return amount_parts.join('.');
+}
+
+const removePoints = (amount) => {
+    var replace = amount.split('.').join('');
+    return replace;
 }

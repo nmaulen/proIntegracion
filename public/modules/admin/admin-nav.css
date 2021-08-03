@@ -181,3 +181,18 @@ h3{
     vertical-align: top;
     width: max-content;
 }
+@media (min-width: 992px) {
+    .modal-lg, .modal-xl {
+        max-width: 99%;
+    }
+  }
+  
+  @media (min-width: 576px) {
+    .modal-dialog {
+        max-width: 99%;
+    }
+  }
+
+  .modal .modal-body {
+    overflow-y: auto;
+  }
