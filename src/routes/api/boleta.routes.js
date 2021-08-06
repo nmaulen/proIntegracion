@@ -1,5 +1,6 @@
 const Boleta = require('../../models/boletaModel');
 const Joi = require('joi')
+const moment = require('moment')
 
 module.exports = [
     {
@@ -41,6 +42,9 @@ module.exports = [
                     }
 
                     delete request.payload.mod
+
+                    request.payload.codeSale = moment().format('YYYY-MM-DDTHH:mm:ss.SSSSS') + Math.floor((Math.random() * 999999999) + 1)
+                    
                     let boleta = await Boleta(request.payload);
 
                     let boletaSaved = await boleta.save();
@@ -63,9 +67,8 @@ module.exports = [
                     fechaEmision: Joi.string().required(),
                     total: Joi.number().integer().required(),
                     detalle: Joi.array().items(Joi.object().keys({
-                        _id: Joi.string().required(),
                         linea: Joi.number().integer().required(),
-                        codProducto: Joi.string().required(),
+                        codePro: Joi.string().required(),
                         nombreProducto: Joi.string().required(),
                         brand: Joi.string().required(),
                         size: Joi.number().integer().required(),
@@ -127,10 +130,7 @@ module.exports = [
 
                     let result = await Boleta.find(query).lean();
 
-                    return result.map(el => {
-                        delete el.password;
-                        return el;
-                    });
+                    return result
                 } catch (error) {
                     console.log(error);
 

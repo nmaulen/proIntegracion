@@ -56,7 +56,9 @@ async function initProductsTable() {
             { data: 'fechaEmision' },
             { data: 'total'}
         ],
-
+        initComplete: function (settings, json) {
+            getBoletas()
+        },
         // rowCallback: function (row, data, index) {
         //     //if(data.estadoPago == true) {
         //     if (data.star == 'yes') {
@@ -561,38 +563,73 @@ const handleModal = (originalData) => {
         document.querySelector('#saveSale').addEventListener('click', async ()=> {
             //console.log('test', validateCotHandler())
             if (validateCotHandler()) {
-                let confirmSale = await Swal.fire({
+                let confirmCot = await Swal.fire({
                     title: 'Estás seguro de guardar la boleta?',
                     showCancelButton: true,
                     confirmButtonText: `Guardar`,
                     denyButtonText: `Cancelar`,
                 })
         
-                if (confirmSale.value) {
+                if (confirmCot.value) {
                     saveSale()
-
                 }
             }
         })
     }
 
 }
+async function getBoletas() {
+    let res = await axios.get('api/boletas')
+        if (res.err) {
+            toastr.warning(res.err)
+            // $('#loadingUsers').empty()
+        } else if(res.data) {
+
+            internals.tables.products.datatable.rows.add(res.data).draw()
+            // $('#loadingUsers').empty()
+        }
+}
 async function saveSale() {
     try {
         loadingHandler('start')
 
+
+        // code: { type: String, required: true},
+        // nombreVendedor: { type: String, required: true },
+        // fechaEmision: { type: String, required: true },
+        // total: { type: Number, required: true },
+        // detalle: [
+        //     {
+        //         _id: false,
+        //         linea: { type: Number, required: true },
+        //         codProducto: { type: Number, required: true },
+        //         nombreProducto: { type: String, required: true },
+        //         brand: { type: String, required: true },
+        //         size: { type: Number, required: true },
+        //         color: { type: String, required: true},
+        //         qty: { type: Number, required: true },
+        //         total: { type: Number, required: true },
+        //         precio: { type: Number, required: true }
+        //     }
+        // ]
+
+        console.log("aaaaaaa",internals.newSale);
+
         let newSaleData = {
-            //idCot: internals.newSale.number,
-            //fechaEntrega: internals.newSale.deliveryDate,
-            //fechaExpiracion: internals.newSale.expirationDate,
-            products: internals.newSale.productsRowsData.reduce((acc,el,i) => {
+            nombreVendedor: "Natalia",
+            fechaEmision: internals.newSale.fechaEmision,
+            total: parseInt(removePoints(internals.newSale.productsRowsData[0].rowSubTotal)),
+            detalle: internals.newSale.productsRowsData.reduce((acc,el,i) => {
                 acc.push({
                     linea: i+1,
                     codePro: el.product.codePro,
                     nombreProducto: el.product.name,
+                    brand: el.product.brand,
+                    size: el.product.size,
+                    color: el.product.color,
                     qty: parseInt(el.qty),
-                    precio: parseInt(el.price),
-                    total: parseInt(el.rowSubTotal)
+                    total: parseInt(removePoints(el.rowSubTotal)),
+                    precio: parseInt(removePoints(el.price))
                 })
 
                 return acc
@@ -611,11 +648,11 @@ async function saveSale() {
 
         if (saveSaleRes.data) {
             toastr.success(`Boleta ${saveSaleRes.data} guardada correctamente.`)
-            initCots()
+            // initCots()
 
             $('#modal').modal('hide')
 
-            searchCots()
+            // searchCots()
 
             return saveSaleRes.data
         }
@@ -1114,7 +1151,7 @@ async function selectProduct(rowId) {
 
     if (productSelectedData.value) {
         console.log("value? ", productSelectedData.value);
-        internals.newSale.productsRowsData[rowId].product.codePro = productSelectedData.value.codePro
+        internals.newSale.productsRowsData[rowId].product.codePro = productSelectedData.value.code
         internals.newSale.productsRowsData[rowId].product.name = productSelectedData.value.name
         internals.newSale.productsRowsData[rowId].product.size = productSelectedData.value.size
         internals.newSale.productsRowsData[rowId].product.color = productSelectedData.value.color
@@ -1122,7 +1159,7 @@ async function selectProduct(rowId) {
         internals.newSale.productsRowsData[rowId].product.price = productSelectedData.value.price
         // internals.newSale.productsRowsData[rowId].product.minValue = Math.round(productSelectedData.value.minValue)
 
-        document.querySelector(`#productCode-${rowId}`).innerHTML = productSelectedData.value.codePro
+        document.querySelector(`#productCode-${rowId}`).innerHTML = productSelectedData.value.code
         document.querySelector(`#productName-${rowId}`).innerHTML = productSelectedData.value.name
         document.querySelector(`#productSize-${rowId}`).innerHTML = productSelectedData.value.size
         document.querySelector(`#productColor-${rowId}`).innerHTML = productSelectedData.value.color
@@ -1145,6 +1182,7 @@ function totalCalc(val) {
     
     
     internals.newSale.productsRowsData[nRowId[1]].qty = val.value
+    internals.newSale.productsRowsData[nRowId[1]].price = document.querySelector(`#productPrice-${nRowId[1]}`).innerHTML
     internals.newSale.productsRowsData[nRowId[1]].rowSubTotal = document.querySelector(`#subTotal-${nRowId[1]}`).innerHTML
 
     updateFinalsAmounts()
