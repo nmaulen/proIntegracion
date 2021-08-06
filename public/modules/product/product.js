@@ -96,6 +96,17 @@ $('#optionCreateShoe').on('click', function() { // CREAR CLIENTE
 
     $('#saveProd').on('click', async function(){
         saveProd()
+        const qrcodePro =$("#codePro").val();
+        const qrnamePro =$("#namePro").val();
+        const qrbrandPro =$("#brandPro").val();
+        const qrsizePro =$("#sizePro").val();
+        const qrcolorPro =$("#colorPro").val();
+        const qrcategoryPro =$("#categoryPro").val();
+        const qrpricePro =$("#pricePro").val();
+        const dimension =$("#dimension").val();
+        const placeQr =$("#qrImg").attr("src","http://chart.apis.google.com/chart?cht=qr&chl="+qrcodePro+qrnamePro+qrbrandPro+qrsizePro+qrcolorPro+qrcategoryPro+qrpricePro+"&chs="+dimension+"x"+dimension);
+     
+        const download =$("#downloadQr").attr("href","http://chart.apis.google.com/chart?cht=qr&chl="+qrcodePro+qrnamePro+qrbrandPro+qrsizePro+qrcolorPro+qrcategoryPro+qrpricePro+"&chs="+dimension+"x"+dimension);
     })
 
 });
@@ -205,6 +216,13 @@ function modNewPro(modUserData) {   //NEW AND MOD USER
         <div class="col-md-4" style="margin-top:10px;">
         Precio
             <input id="pricePro" type="text" placeholder="Precio" class="form-control border-input">
+        </div>
+        <div class="col-md-4" style="margin-top:10px;">
+        QR
+            <div class="div1" id="downloadQr"><img src="#" id="qrImg"></div>
+        </div>
+        <div class="col-md-4 " style="margin-top:10px; display: none !important;">
+        <input type="number" id="dimension" value="200" disabled="">
         </div>
 
         <div class="col-md-12" id="newUserErrorMessage"></div>
