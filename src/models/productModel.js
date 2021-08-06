@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const productSchema = new Schema({
-    code: { type: String, required: true},
+    codePro: { type: String, required: true},
     name: { type: String, required: true },
     brand: { type: String, required: true },
     size: { type: String, required: true },

@@ -15,7 +15,7 @@ module.exports = [
                     let query = {
                         $or: [
                             {
-                                code: request.payload.code
+                                codePro: request.payload.codePro
                             }
                         ]
                     }
@@ -57,7 +57,7 @@ module.exports = [
             },
             validate: {
                 payload: Joi.object().keys({
-                    code: Joi.string().allow(null, ''),
+                    codePro: Joi.string().allow(null, ''),
                     name: Joi.string().required(),
                     brand: Joi.string().required(),
                     size: Joi.string().allow(null, ''),

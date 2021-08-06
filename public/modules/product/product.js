@@ -21,7 +21,7 @@ function chargeUsersTable() {
         },
         responsive: false,
         columns: [
-            { data: 'code' },
+            { data: 'codePro' },
             { data: 'name' },
             { data: 'brand' },
             { data: 'size' },
@@ -243,7 +243,7 @@ function modNewPro(modUserData) {   //NEW AND MOD USER
             $('#codePro').focus()
         }, 500)
     } else {
-        $('#codePro').val(modUserData.code);
+        $('#codePro').val(modUserData.codePro);
         $('#codePro').attr('readOnly', true);
         $('#namePro').val(modUserData.name);
         $('#brandPro').val(modUserData.brand);
@@ -292,7 +292,7 @@ function showPass() {
 async function saveProd(mod) {
 
     let userData = {
-        code: ($('#codePro').val()),
+        codePro: ($('#codePro').val()),
         name: ($('#namePro').val()),
         brand: $('#brandPro').val(),
         size: $('#sizePro').val(),
@@ -381,7 +381,7 @@ async function validateUserData(userData) {
     let errorMessage = ''
 
     // 8 puntos
-    if(userData.code.length > 1) { // 1
+    if(userData.codePro.length > 1) { // 1
         validationCounter++
         $('#codePro').css('border', '1px solid #3498db')
     } else {

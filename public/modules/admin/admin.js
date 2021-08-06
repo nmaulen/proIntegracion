@@ -52,7 +52,7 @@ async function initProductsTable() {
         searchHighlight: true,
         responsive: false,
         columns: [
-            { data: 'code' },
+            { data: 'codeSale' },
             { data: 'fechaEmision' },
             { data: 'total'}
         ],
@@ -416,8 +416,8 @@ const handleModal = (originalData) => {
     if (originalData) {
         // await getAuxiliarCompleto(originalQuoteData.codAuxiliar)
 
-        internals.newSale.title = `<i class="fas fa-file-invoice"></i> Boleta <span class="badge badge-primary">N° ${originalData.code}</span>`
-        internals.newSale.code = originalData.code
+        internals.newSale.title = `<i class="fas fa-file-invoice"></i> Boleta <span class="badge badge-primary">N° ${originalData.codeSale}</span>`
+        internals.newSale.codeSale = originalData.codeSale
         internals.newSale.rut = originalData.rut
         internals.newSale.name = originalData.name
 
@@ -429,7 +429,7 @@ const handleModal = (originalData) => {
                 qty: el.cantidad,
                 rowSubTotal: el.total,
                 product: {
-                    code: el.codProducto,
+                    codePro: el.codPro,
                     name: el.nombreProducto,
                     brand: el.brand,
                     size: el.size
@@ -587,7 +587,7 @@ async function saveSale() {
             products: internals.newSale.productsRowsData.reduce((acc,el,i) => {
                 acc.push({
                     linea: i+1,
-                    codProducto: el.product.code,
+                    codePro: el.product.codePro,
                     nombreProducto: el.product.name,
                     qty: parseInt(el.qty),
                     precio: parseInt(el.price),
@@ -598,8 +598,8 @@ async function saveSale() {
             }, [])
         }
 
-        if (internals.newSale.code) {
-            newSaleData.code = internals.newSale.number
+        if (internals.newSale.codeSale) {
+            newSaleData.codeSale = internals.newSale.number
         }
 
         console.log('newSaleData', newSaleData)
@@ -631,7 +631,7 @@ function addRowToTable() {
     if (internals.newSale.productsRowsData.length < 24) {
         internals.newSale.productsRowsData.push({
             product: {
-                code: '',
+                codePro: '',
                 name: ''
             },
             qty: 0,
@@ -663,7 +663,7 @@ function drawTableBody() {
                     <button onclick="selectProduct(${i})" type="button" class="btn btn-primary btn-sm searchProduct"><i class="fas fa-search"></i></button>
                 </td>
                 <td id="productCode-${i}">
-                    ${(el.product.code === '') ? '-SELECCIONE PRODUCTO-' : el.product.code}
+                    ${(el.product.codePro === '') ? '-SELECCIONE PRODUCTO-' : el.product.codePro}
                 </td>
                 <td id="productName-${i}">
                     ${(el.product.name === '') ? '-SELECCIONE PRODUCTO-' : el.product.name}
@@ -741,7 +741,7 @@ function validateCotHandler() {
                 errorMessage += `* El sub total de la fila ${i+1} no puede ser 0. <br>`
             }
 
-            if (el.product.code.length === 0) {
+            if (el.product.codePro.length === 0) {
                 validationCounter -= 1
                 errorMessage += `* Debe seleccionar un producto en la fila ${i+1}. <br>`
             }
@@ -1050,10 +1050,10 @@ async function selectProduct(rowId) {
                         document.querySelector('#productosTable').innerHTML = res.data.reduce((acc, el, i) => {
                             acc += `
                                 <tr onclick="selectProductRadio(${i})">
-                                    <td><input id="product-${i}" type="radio" name="product" data-code="${el.code}" data-name="${el.name}" data-size="${el.size}"
+                                    <td><input id="product-${i}" type="radio" name="product" data-code="${el.codePro}" data-name="${el.name}" data-size="${el.size}"
                                     data-color="${el.color}" data-brand="${el.brand}" data-price="${el.price}"></td>
                                     <td>${i + 1}</td>
-                                    <td>${el.code}</td>
+                                    <td>${el.codePro}</td>
                                     <td>${el.name}</td>
                                     <td>${el.size}</td>
                                     <td>${el.color}</td>
@@ -1113,7 +1113,7 @@ async function selectProduct(rowId) {
 
     if (productSelectedData.value) {
         console.log("value? ", productSelectedData.value);
-        internals.newSale.productsRowsData[rowId].product.code = productSelectedData.value.code
+        internals.newSale.productsRowsData[rowId].product.codePro = productSelectedData.value.codePro
         internals.newSale.productsRowsData[rowId].product.name = productSelectedData.value.name
         internals.newSale.productsRowsData[rowId].product.size = productSelectedData.value.size
         internals.newSale.productsRowsData[rowId].product.color = productSelectedData.value.color
@@ -1121,7 +1121,7 @@ async function selectProduct(rowId) {
         internals.newSale.productsRowsData[rowId].product.price = productSelectedData.value.price
         // internals.newSale.productsRowsData[rowId].product.minValue = Math.round(productSelectedData.value.minValue)
 
-        document.querySelector(`#productCode-${rowId}`).innerHTML = productSelectedData.value.code
+        document.querySelector(`#productCode-${rowId}`).innerHTML = productSelectedData.value.codePro
         document.querySelector(`#productName-${rowId}`).innerHTML = productSelectedData.value.name
         document.querySelector(`#productSize-${rowId}`).innerHTML = productSelectedData.value.size
         document.querySelector(`#productColor-${rowId}`).innerHTML = productSelectedData.value.color

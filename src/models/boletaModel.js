@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const boletaSchema = new Schema({
-    code: { type: String, required: true},
+    codeSale: { type: String, required: true},
     nombreVendedor: { type: String, required: true },
     fechaEmision: { type: String, required: true },
     total: { type: Number, required: true },
@@ -11,7 +11,7 @@ const boletaSchema = new Schema({
         {
             _id: false,
             linea: { type: Number, required: true },
-            codProducto: { type: Number, required: true },
+            codePro: { type: Number, required: true },
             nombreProducto: { type: String, required: true },
             brand: { type: String, required: true },
             size: { type: Number, required: true },
