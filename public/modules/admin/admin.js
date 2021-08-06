@@ -563,14 +563,14 @@ const handleModal = (originalData) => {
         document.querySelector('#saveSale').addEventListener('click', async ()=> {
             //console.log('test', validateCotHandler())
             if (validateCotHandler()) {
-                let confirmCot = await Swal.fire({
+                let confirmSale = await Swal.fire({
                     title: 'Estás seguro de guardar la boleta?',
                     showCancelButton: true,
                     confirmButtonText: `Guardar`,
                     denyButtonText: `Cancelar`,
                 })
         
-                if (confirmCot.value) {
+                if (confirmSale.value) {
                     saveSale()
                 }
             }
