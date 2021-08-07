@@ -209,7 +209,7 @@ function modNewPro(modUserData) {   //NEW AND MOD USER
         <option value="deporte">Deporte</option>
         <option value="formal">Formal</option>
         <option value="verano">Verano</option>
-        <option value="invierno">Invierno/<option>
+        <option value="invierno">Invierno</option>
         </select>
         </div>
 
